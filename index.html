@@ -214,6 +214,7 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
     <p>Rake New England lawns clean before the sun goes down.</p>
     <div class="menu">
       <button class="primary" id="playBtn" type="button">Play</button>
+      <button class="secondary" id="dailyBtn" type="button">Daily lawn<small id="dailyInfo"></small></button>
       <button class="secondary" id="contBtn" type="button" hidden>Continue<small id="contInfo"></small></button>
       <button class="secondary" id="shedBtn" type="button">Shed<small id="shedInfo"></small></button>
       <button class="secondary" id="optBtn" type="button">Options</button>
@@ -228,6 +229,7 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
         <li>Things are hidden under the leaves. Each one you find goes on the shelf in your shed.</li>
         <li>Each town is a five-day week, and every day gets harder. Earn a star to unlock the next day.</li>
         <li>Every leaf you bag goes to the shed, where you can spend leaves on upgrades.</li>
+        <li>The daily lawn is the same for everyone each day. Come back tomorrow for a new one.</li>
       </ul>
     </details>
   </div>
@@ -403,7 +405,8 @@ const RAKES={
   ash:{name:'Ash',c:'#9a7347',price:0},
   cherry:{name:'Cherry red',c:'#b8322a',price:150},
   black:{name:'Black',c:'#2b2622',price:150},
-  gold:{name:'Gold',c:'#d9a92e',price:0,milestone:12000}
+  gold:{name:'Gold',c:'#d9a92e',price:0,milestone:12000},
+  silver:{name:'Moonlit silver',c:'#c9d3df',price:0,prize:90}
 };
 const COMPOST=[[2000,'A compost heap starts behind the shed'],[5000,'Unlocks the buffalo plaid tarp'],[12000,'Unlocks the gold rake handle'],[25000,'The compost grows a pumpkin patch']];
 
@@ -496,9 +499,26 @@ const BOSS={id:'ne',town:'The Nor’easter',state:'Gulf of Maine',lat:43.66,lon:
   facts:['A nor’easter is a coastal storm named for its strongest winds, which blow in from the northeast.',
     'The Blizzard of 1978, a nor’easter, buried Boston under more than 27 inches of snow.'],
   leafMul:0.6,finds:[]};
-const levelOf=id=>LEVELS[id]||(id==='ne'?BOSS:null);
+const MOOSE={id:'mo',town:'Greenville',state:'Maine',lat:45.4598,lon:-69.5906,special:true,moose:true,
+  desc:'A lawn on Moosehead Lake, and a bull moose who loves your leaf piles. He tramples whatever he walks through and now and then charges the tarp. Fill bags and flick them at him: five hits and he heads back into the woods for good.',
+  wind:1,gustEvery:[10,16],snow:false,trees:2,leafMul:1.1,
+  leafWeights:[0.14,0.18,0.2,0.22,0.16,0.1],
+  tree:['#b5341b','#d9692a','#e2b844','#c98a1f','#8a4a25'],treeDark:'#5e3a16',
+  facts:['Maine has more moose than any other state outside Alaska.',
+    'Moosehead Lake, at Greenville, is the largest lake in Maine.',
+    'A bull moose’s antlers can span more than five feet, and he grows a new set every year.'],
+  finds:[]};
+const NIGHT={...LEVELS.vt,id:'nt',town:'Stowe by moonlight',special:true,night:true,
+  desc:'Your prize for three stars on every lawn: the Stowe lawn after dark under a full moon. Your rake carries a lantern; everything else is in shadow.',
+  facts:['The full moon nearest the autumn equinox is called the harvest moon.'],finds:[]};
+BOSS.special=true;
+const SPECIAL={ne:BOSS,mo:MOOSE,nt:NIGHT};
+const levelOf=id=>LEVELS[id]||SPECIAL[id]||null;
 const weekDone=id=>Object.keys(DIFFS).some(d=>(store.best[`${id}:d5:${d}`]?.stars||0)>=1);
-const bossOpen=()=>store.playtest||Object.keys(LEVELS).every(weekDone);
+const totalStars=()=>Object.keys(LEVELS).reduce((t,id)=>t+[1,2,3,4,5].reduce((u,d)=>u+Math.max(0,...Object.keys(DIFFS).map(df=>store.best[`${id}:d${d}:${df}`]?.stars||0)),0),0);
+// The moose opens halfway (three weeks), the storm after all six, the moonlit lawn at 90 stars.
+const specialOpen=id=>!!store.playtest||(id==='ne'?Object.keys(LEVELS).every(weekDone):id==='mo'?Object.keys(LEVELS).filter(weekDone).length>=3:id==='nt'?totalStars()>=90:false);
+const bossOpen=()=>specialOpen('ne');
 const PLACES=[
   {id:'vt'},{id:'nh'},{id:'me'},{id:'ma'},{id:'ri'},{id:'ct'}
 ].map(p=>LEVELS[p.id]?{...LEVELS[p.id],level:true}:p);
@@ -506,7 +526,7 @@ const PLACES=[
 // Saved per viewer: options, best score and stars per town, day and difficulty, days unlocked, the finds shelf,
 // the shed (leaves to spend, lifetime total, upgrades, cosmetics), and an interrupted round.
 const KEY='rake-before-dark:v1', ROUND_KEY='rake-before-dark:round';
-const blankStore=()=>({best:{},finds:{},unlocked:{},bank:0,total:0,up:{},owned:['blue','ash'],cos:{tarp:'blue',rake:'ash'},stats:{},ach:{},dale:[],opts:{diff:'standard',muted:false,vibrate:true,last:'vt'}});
+const blankStore=()=>({best:{},finds:{},unlocked:{},bank:0,total:0,up:{},owned:['blue','ash'],cos:{tarp:'blue',rake:'ash'},stats:{},ach:{},dale:[],dailyLog:{},opts:{diff:'standard',muted:false,vibrate:true,last:'vt'}});
 let store=blankStore();
 try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.best&&s.finds){const b=blankStore(); store={...b,...s,cos:{...b.cos,...(s.cos||{})},opts:{...b.opts,...(s.opts||{})}};}}catch(_){}
 // Older saves kept one best per town (and before that per town and difficulty); those become Monday's.
@@ -515,7 +535,7 @@ for(const id of Object.keys(LEVELS)){
   for(const d of Object.keys(DIFFS)){const k=`${id}:${d}`; if(store.best[k]){store.best[`${id}:d1:${d}`]??=store.best[k]; delete store.best[k];}}
 }
 const U=k=>store.up[k]||0;
-const SECS=()=>D.secs*(LV&&LV.boss?1.7:1);
+const SECS=()=>D.secs*(LV&&LV.boss?1.7:LV&&LV.moose?1.3:1);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(_){}}
 function loadRound(){try{return JSON.parse(localStorage.getItem(ROUND_KEY));}catch(_){return null;}}
 function clearRound(){try{localStorage.removeItem(ROUND_KEY);}catch(_){}}
@@ -712,7 +732,7 @@ function layout(){
   // Keep leaves out of the strips where phones take edge swipes as back or home gestures, and out from under the HUD.
   MINY=Math.max(56,$('hud').getBoundingClientRect().bottom-14); MAXY=H-SAFE_B-20;
   placeGeom();
-  paintGrass(); paintFog();
+  paintGrass(); paintFog(); darkC.width=Math.ceil(W/2); darkC.height=Math.ceil(H/2);
   scrape.width=snow.width=cv.width; scrape.height=snow.height=cv.height;
   for(const l of leaves){l.x=clamp(l.x,MINX,MAXX); l.y=clamp(l.y,MINY,MAXY);}
   gw=Math.ceil(W/CELL)+1;
@@ -748,12 +768,13 @@ function lawnSpot(margin){
 }
 
 function reset(){
-  LV=levelOf(selected)||LEVELS.vt; D=DIFFS[store.opts.diff]||DIFFS.standard; DP=dayParams(LV,DAY);
+  LV=levelOf(selected)||LEVELS.vt; D=DAILY?DIFFS.standard:(DIFFS[store.opts.diff]||DIFFS.standard); DP=dayParams(LV,DAY);
   placeGeom(); hornAt=-1;
   rival=null; rivalBagged=0; if(DP.rival) makeRival();
   sun=sunTimes(new Date(Date.now()+(DAY-1)*864e5),LV.lat,LV.lon);
   T1=sun.dusk; T0=sun.sunset-LEAD_MIN*6e4; pSun=(sun.sunset-T0)/(T1-T0);
-  LKEYS=LV.boss?[[0,[190,190,205],0.4],[pSun,[150,150,175],0.55],[1,[40,42,80],0.85]]:LV.snow
+  if(LV.night){T0=sun.dusk; T1=T0+70*6e4; pSun=-1; rx=W/2; ry=H*0.55;}
+  LKEYS=LV.night?[[0,[95,105,165],0.72],[1,[75,85,140],0.78]]:LV.boss?[[0,[190,190,205],0.4],[pSun,[150,150,175],0.55],[1,[40,42,80],0.85]]:LV.snow
     ?[[0,[226,226,236],0.3],[pSun,[196,188,210],0.45],[pSun+(1-pSun)*0.45,[125,122,165],0.6],[1,[36,40,82],0.82]]
     :[[0,[255,224,170],0.22],[pSun*0.8,[255,190,120],0.32],[pSun,[240,130,90],0.45],[pSun+(1-pSun)*0.45,[130,100,175],0.58],[1,[40,42,95],0.8]];
   leaves=[]; bagged=0; fell=0; elapsed=0; playT=0; spawnAcc=0; snowAmt=0;
@@ -783,10 +804,12 @@ function reset(){
     return {...f,x,y,found:false,clearT:0,raked:false,ft:0};
   });
   N0=leaves.length;
-  boss=LV.boss?initBoss():null;
+  boss=LV.boss?initBoss():null; moose=LV.moose?initMoose():null;
+  TH=LV.boss||LV.moose?{fill:0,bags:[],proj:[],ready:false}:null;
   for(const c of [sctx,nctx]){c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,scrape.width,scrape.height);}
   $('sunlabel').textContent=`${DAY_NAMES[DAY-1].slice(0,3)} · Sunset ${fmtShort(sun.sunset)} · Dusk ${fmtShort(sun.dusk)}`;
-  $('sunmark').style.left=(pSun*100)+'%';
+  $('sunmark').style.left=(pSun*100)+'%'; $('sunmark').hidden=pSun<0;
+  if(LV.night) $('sunlabel').textContent=`Full moon · until ${fmtShort(T1)}`;
 }
 
 function snapshot(){
@@ -799,7 +822,7 @@ function snapshot(){
     leaves:leaves.filter(l=>l.st!==2).map(l=>[Math.round(l.x),Math.round(l.y),+l.a.toFixed(2),l.si,l.st,+l.z.toFixed(2),+l.b.toFixed(2)])};
 }
 function saveRound(){
-  if(state!=='play'&&state!=='paused'||LV.boss) return;
+  if(state!=='play'&&state!=='paused'||LV.special||DAILY) return;
   try{localStorage.setItem(ROUND_KEY,JSON.stringify(snapshot()));}catch(_){}
 }
 function restoreRound(s){
@@ -948,7 +971,9 @@ function update(dt){
     }
     animateFlakes(dt);
   }
-  if(boss){updateBoss(dt); if(state!=='play') return;}
+  if(boss) updateBoss(dt);
+  if(moose) updateMoose(dt);
+  if(TH){updateThrows(dt); if(state!=='play') return;}
 
   grid.fill(0);
   for(const l of leaves) if(l.st===0) grid[(l.y/CELL|0)*gw+(l.x/CELL|0)]++;
@@ -994,7 +1019,7 @@ function update(dt){
       const k=Math.min(1,dt*7);
       const tx=l.owner?rival.tarp.x+rival.tarp.w/2:bx, ty=l.owner?rival.tarp.y+rival.tarp.h/2:by;
       l.x+=(tx-l.x)*k; l.y+=(ty-l.y)*k; l.a+=dt*6;
-      if(l.bt>=1){if(l.owner) rivalBagged++; else{bagged++; if(LV.boss) bossBagged();} leaves[i]=leaves[leaves.length-1]; leaves.pop();}
+      if(l.bt>=1){if(l.owner) rivalBagged++; else{bagged++; if(TH) thBagged();} leaves[i]=leaves[leaves.length-1]; leaves.pop();}
       continue;
     }
     // Leaves in a dense pile shelter each other from wind and drag on each other, so piles settle fast.
@@ -1224,6 +1249,7 @@ function updateChips(p){
     const i=DP.fogBanks.findIndex(([c,w])=>p>c-w-0.05&&p<c-w*0.4);
     if(i>=0){list.push(['','Fog rolling in']); if(hornAt!==i){hornAt=i; foghorn();}}
   }
+  if(moose&&moose.mode!=='gone') list.push([moose.mode==='charge'?'bad':'',moose.mode==='charge'?'The moose is charging the tarp!':moose.mode==='away'||moose.mode==='flee'?'The moose ran off. He’ll be back':`Moose: ${moose.hp} hits to go`]);
   if(rival) list.push([bagged>=rivalBagged?'good':'bad',`You ${bagged} · Dale ${rivalBagged}`]);
   for(const k of 'STRP') if(active[k]) list.push([POWERS[k].good?'good':'bad',`${POWERS[k].name} ${Math.ceil(active[k])}`]);
   const key=list.map(c=>c.join(':')).join('|');
@@ -1493,7 +1519,7 @@ function draw(){
   ctx.globalAlpha=1; ctx.setTransform(DPR,0,0,DPR,0,0);
   drawLanterns(p); drawKids();
   fogAmt=fogAt(p);
-  drawPickups(); drawCanopy(); drawBossLow(); drawFlakes(); drawFog(); drawLighthouse(); drawRivalRaker(); drawRake(); drawWind(); drawBossHigh(); drawLight(p); drawBeamGlow(); drawPopups();
+  drawPickups(); drawMoose(); drawCanopy(); drawBossLow(); drawFlakes(); drawFog(); drawLighthouse(); drawRivalRaker(); drawRake(); drawWind(); drawBossHigh(); drawProj(); drawLight(p); drawBeamGlow(); drawNight(); drawPopups();
 
   $('clock').textContent=fmtTime.format(state==='over'?endClock:T0+(T1-T0)*p);
   $('sunfill').style.width=(p*100)+'%';
@@ -1503,7 +1529,7 @@ function draw(){
 
 function starsFor(pct,early){return (early&&pct>=80)||pct>=90?3:pct>=75?2:pct>=50?1:0;}
 const starText=n=>'★'.repeat(n)+`<span class="off">${'★'.repeat(3-n)}</span>`;
-const bestKey=()=>`${LV.id}:d${DAY}:${store.opts.diff}`;
+const bestKey=()=>DAILY?`daily:${DAILY.key}`:`${LV.id}:d${DAY}:${store.opts.diff}`;
 
 function finish(early){
   if(LV.boss) return bossLost();
@@ -1529,15 +1555,18 @@ function finish(early){
   if(isBest){store.best[bestKey()]={score,stars:Math.max(stars,prev?prev.stars:0)}; save();}
   else if(stars>prev.stars){prev.stars=stars; save();}
   // A star unlocks the next day; every bagged leaf goes to the shed.
-  const unlockedNext=stars>=1&&DAY<5&&(store.unlocked[LV.id]||1)<DAY+1;
-  if(stars>=1&&DAY<5) store.unlocked[LV.id]=Math.max(store.unlocked[LV.id]||1,DAY+1);
+  const unlockedNext=!DAILY&&!LV.special&&stars>=1&&DAY<5&&(store.unlocked[LV.id]||1)<DAY+1;
+  if(!DAILY&&!LV.special&&stars>=1&&DAY<5) store.unlocked[LV.id]=Math.max(store.unlocked[LV.id]||1,DAY+1);
   store.bank+=bagged; store.total+=bagged;
   stat('lost',lost); stat('days');
   if(beatDale&&!store.dale.includes(LV.id)) store.dale.push(LV.id);
+  if(DAILY) store.dailyLog[DAILY.key]=true;
   save();
   if(store.total>=100) award('firstbag');
   if(store.total>=50000) award('million');
   if(early&&stars>=1) award('sun');
+  if(DAILY&&dailyStreak()>=3) award('daily');
+  if(LV.night&&stars===3) award('night');
   if(LV.fog&&stars===3) award('fog');
   if(LV.wall&&DAY===5&&stars===3) award('stone');
   if(LV.sea&&lost<20&&stars>=1) award('seawall');
@@ -1545,7 +1574,7 @@ function finish(early){
   if(Object.keys(LEVELS).every(id=>(store.finds[id]||[]).length>=LEVELS[id].finds.length)) award('curator');
 
   $('verdict').innerHTML=(rival?(beatDale?'You beat Dale':'Dale wins this one'):early?'Lawn clear':pct>=90?'Clean lawn':pct>=70?'Good enough for October':pct>=40?'Half a lawn':'There’s always tomorrow')+(isBest&&score>0?'<span class="best">New best</span>':'');
-  $('endtime').textContent=`${LV.town} · ${DAY_NAMES[DAY-1]} · `+(early?`beat the sun by ${minsLeft} min`:`civil dusk ${fmtTime.format(T1)}`);
+  $('endtime').textContent=`${LV.town}${LV.special?'':` · ${DAY_NAMES[DAY-1]}`} · `+(LV.night?(early?`${minsLeft} min of moonlight left`:`moonset ${fmtTime.format(T1)}`):early?`beat the sun by ${minsLeft} min`:`civil dusk ${fmtTime.format(T1)}`);
   $('stars').innerHTML=starText(stars); $('statsRow').hidden=false; $('again').textContent='Rake again';
   $('stars').setAttribute('aria-label',`${stars} of 3 stars`);
   $('rScore').textContent=num(score); $('rPct').textContent=pct+'%'; $('rBags').textContent=Math.ceil(bagged/BAG_SIZE);
@@ -1555,13 +1584,14 @@ function finish(early){
   const foundNow=items.filter(i=>i.found);
   if(findBonus) rows.push([`Finds (${foundNow.length})`,'+'+num(findBonus)]);
   if(lost) rows.push(['Lost over the cliff',`${num(lost)} leaves`]);
+  if(moose) rows.push([moose.mode==='gone'?'Drove off the moose':'The moose stayed all evening',moose.mode==='gone'?'+1,500':'—']);
   if(rival) rows.push([beatDale?`Beat Dale (${num(bagged)} to ${num(rivalBagged)})`:`Dale bagged more (${num(rivalBagged)} to ${num(bagged)}); stars capped at 1`,beatDale?'+'+num(daleBonus):'—']);
   $('breakdown').innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
   const got=new Set(store.finds[LV.id]||[]);
   $('rFinds').innerHTML=LV.finds.map(f=>got.has(f.id)?`<span class="find">${f.e} ${esc(f.name)}</span>`:`<span class="find missing">? Not found yet</span>`).join('');
   const week=stars>=1&&DAY===5?` You finished the ${LV.town} week.`:unlockedNext?` ${DAY_NAMES[DAY]} is unlocked.`:'';
-  $('rNote').textContent=`+${num(bagged)} leaves to the shed (${num(store.bank)} to spend).${week} ${LV.state} finds: ${got.size} of ${LV.finds.length}. ${D.name} difficulty.`;
-  const canNext=DAY<5&&(store.unlocked[LV.id]||1)>DAY;
+  $('rNote').textContent=`${DAILY?`Daily lawn for ${DAILY.key}. `:''}+${num(bagged)} leaves to the shed (${num(store.bank)} to spend).${week}${LV.finds.length?` ${LV.state} finds: ${got.size} of ${LV.finds.length}.`:''} ${D.name} difficulty.`;
+  const canNext=!DAILY&&!LV.special&&DAY<5&&(store.unlocked[LV.id]||1)>DAY;
   $('nextDay').hidden=!canNext;
   if(canNext) $('nextDay').textContent=`Rake ${DAY_NAMES[DAY]}`;
   $('again').className=canNext?'secondary':'primary';
@@ -1596,7 +1626,10 @@ const ACH={
   curator:{name:'Curator',desc:'Find all 30 things hidden under the leaves.'},
   storm:{name:'Storm chaser',desc:'Break the Nor’easter.'},
   snowman:{name:'Snow day',desc:'Send a snowman down the hill.'},
-  million:{name:'Leaf mountain',desc:'Rake 50,000 leaves in all.'}
+  million:{name:'Leaf mountain',desc:'Rake 50,000 leaves in all.'},
+  moose:{name:'Moose on the loose',desc:'Drive the Greenville moose back into the woods.'},
+  daily:{name:'Regular',desc:'Rake the daily lawn three days in a row.'},
+  night:{name:'Night owl',desc:'Get 3 stars raking by moonlight.'}
 };
 function stat(k,n=1){store.stats[k]=(store.stats[k]||0)+n; if(k==='shoo'&&store.stats.shoo>=25) award('shoo');}
 function award(id){
@@ -1611,29 +1644,30 @@ function award(id){
 // and fog and lightning at 4.
 const BOSS_HP=12, BAG_LEAVES=60;
 let boss=null, grab=null;
-function initBoss(){return {x:W/2,y:MINY+64*K,r:58*K,hp:BOSS_HP,t:0,flash:0,fill:0,bags:[],proj:[],strike:null,nextStrike:5,nextWave:2,phase:1,screen:0,fog:0,ready:false,fade:0};}
+let TH=null;
+function initBoss(){return {x:W/2,y:MINY+64*K,r:58*K,hp:BOSS_HP,t:0,flash:0,strike:null,nextStrike:5,nextWave:2,phase:1,screen:0,fog:0,fade:0};}
 const bagSlot=i=>[tp.x+tp.w*(0.2+0.3*i),tp.y+tp.h*0.45];
 function spawnBag(){
-  const B=boss;
+  const B=TH;
   while(B.fill>=BAG_LEAVES&&B.bags.length<3){
     B.fill-=BAG_LEAVES;
     const i=[0,1,2].find(j=>!B.bags.some(b=>b.i===j)), [x,y]=bagSlot(i);
     B.bags.push({i,x,y});
-    if(!B.ready){B.ready=true; popup('Bag full! Flick it up at the storm',tp.x+tp.w/2,tp.y-24*K,true); buzz(25);}
+    if(!B.ready){B.ready=true; popup(LV.moose?'Bag full! Flick it at the moose':'Bag full! Flick it up at the storm',tp.x+tp.w/2,tp.y-24*K,true); buzz(25);}
   }
 }
-function bossBagged(){boss.fill++; spawnBag();}
+function thBagged(){TH.fill++; spawnBag();}
 function releaseBag(){
   const g=grab; grab=null;
   const now=g.pts[g.pts.length-1];
   let old=g.pts[0];
   for(const q of g.pts) if(now[2]-q[2]<=90){old=q; break;}
   const t=Math.max(16,now[2]-old[2])/1000, vx=(now[0]-old[0])/t, vy=(now[1]-old[1])/t;
-  if(vy<-250) launchBag(g.b,vx,vy);
+  if(LV.boss?vy<-250:Math.hypot(vx,vy)>300) launchBag(g.b,vx,vy);
   else{const [x,y]=bagSlot(g.b.i); g.b.x=x; g.b.y=y;}
 }
 function launchBag(b,vx,vy){
-  const B=boss, L=Math.hypot(vx,vy)||1, sp=clamp(L,800,1600)*K;
+  const B=TH, L=Math.hypot(vx,vy)||1, sp=clamp(L,800,1600)*K;
   B.bags=B.bags.filter(o=>o!==b);
   B.proj.push({x:b.x,y:b.y,vx:vx/L*sp,vy:vy/L*sp,rot:0});
   noiseHit(600,0.6,0.25,0.3); spawnBag();
@@ -1660,15 +1694,22 @@ function updateBoss(dt){
       if(B.strike.t>1.5){B.strike=null; B.nextStrike=playT+5+Math.random()*3;}
     }
   }
+}
+// Thrown bags fly straight; they hit the storm or a moose that isn't already running off.
+function updateThrows(dt){
+  const B=TH, tgt=boss?{x:boss.x,y:boss.y,r:boss.r*0.95}:moose&&['wander','charge'].includes(moose.mode)?{x:moose.x,y:moose.y,r:32*K}:null;
   for(const pr of B.proj){
     pr.x+=pr.vx*dt; pr.y+=pr.vy*dt; pr.rot+=dt*9;
-    if(Math.hypot(pr.x-B.x,pr.y-B.y)<B.r*0.95){
-      pr.done=true; B.hp--; B.flash=1; shake(8); buzz(60); tones([392,523],'square',0.08,0.25,0.1);
-      popup(B.hp===8?'Hit! Sleet is coming':B.hp===4?'Hit! Fog and lightning':B.hp>0?'Direct hit!':'The storm breaks!',B.x,B.y+B.r+16*K,true);
-      if(B.hp<=0) return bossWon();
-    }else if(pr.y<-60||pr.x<-60||pr.x>W+60){pr.done=true; popup('Missed',clamp(pr.x,50,W-50),MINY+30*K,false);}
+    if(tgt&&Math.hypot(pr.x-tgt.x,pr.y-tgt.y)<tgt.r){pr.done=true; if(boss) hitBoss(); else hitMoose(); if(state!=='play') return;}
+    else if(pr.y<-60||pr.y>H+60||pr.x<-60||pr.x>W+60){pr.done=true; popup('Missed',clamp(pr.x,50,W-50),clamp(pr.y,MINY+30*K,MAXY-30*K),false);}
   }
   B.proj=B.proj.filter(pr=>!pr.done);
+}
+function hitBoss(){
+  const B=boss;
+  B.hp--; B.flash=1; shake(8); buzz(60); tones([392,523],'square',0.08,0.25,0.1);
+  popup(B.hp===8?'Hit! Sleet is coming':B.hp===4?'Hit! Fog and lightning':B.hp>0?'Direct hit!':'The storm breaks!',B.x,B.y+B.r+16*K,true);
+  if(B.hp<=0) bossWon();
 }
 function drawLaunchBag(x,y,s,rot){
   ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s*K,s*K);
@@ -1680,15 +1721,15 @@ function drawLaunchBag(x,y,s,rot){
   ctx.restore();
 }
 function drawBossLow(){
-  if(!boss||state==='ending') return;
+  if(!TH||state==='ending') return;
   const B=boss;
-  if(B.strike&&!B.strike.hit){
+  if(B&&B.strike&&!B.strike.hit){
     ctx.strokeStyle=`rgba(255,80,60,${0.45+0.4*Math.sin(B.strike.t*22)})`; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(B.strike.x,B.strike.y,(72-30*B.strike.t)*K,0,6.283); ctx.stroke();
   }
   ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(tp.x,tp.y+tp.h+4,tp.w,5*K);
-  ctx.fillStyle='#c9622a'; ctx.fillRect(tp.x,tp.y+tp.h+4,tp.w*Math.min(1,B.fill/BAG_LEAVES),5*K);
-  for(const b of B.bags) drawLaunchBag(b.x,b.y,1,0);
+  ctx.fillStyle='#c9622a'; ctx.fillRect(tp.x,tp.y+tp.h+4,tp.w*Math.min(1,TH.fill/BAG_LEAVES),5*K);
+  for(const b of TH.bags) drawLaunchBag(b.x,b.y,1,0);
 }
 const PUFFS=[[-0.7,0.12,0.5],[-0.38,-0.22,0.58],[0.08,-0.34,0.64],[0.5,-0.16,0.55],[0.78,0.14,0.44],[0,0.14,0.7],[-0.4,0.22,0.5],[0.42,0.22,0.5]];
 function drawBossHigh(){
@@ -1725,14 +1766,14 @@ function drawBossHigh(){
   const bw=130*K, bx=cx-bw/2, by=cy+r*0.75+10;
   ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(bx-2,by-2,bw+4,9);
   ctx.fillStyle='#e05a3a'; ctx.fillRect(bx,by,bw*Math.max(0,B.hp)/BOSS_HP,5);
-  for(const pr of B.proj) drawLaunchBag(pr.x,pr.y,0.9,pr.rot);
   ctx.restore();
 }
+function drawProj(){if(TH) for(const pr of TH.proj) drawLaunchBag(pr.x,pr.y,0.9,pr.rot);}
 function bossWon(){
   state='ending'; drag=false; showRake=false; grab=null; active={}; gust=null; env=0; wx=wy=0;
   $('chips').innerHTML=''; chipKey=''; leaveTrap();
   store.bank+=bagged; store.total+=bagged; store.beatBoss=true; save(); award('storm');
-  boss.proj=[]; boss.bags=[]; boss.strike=null;
+  TH.proj=[]; TH.bags=[]; boss.strike=null;
   tones([392,523,659,784],'triangle',0.14,0.5,0.16);
   ending={sub:'snow',t:0}; show(null);
 }
@@ -1746,6 +1787,107 @@ function bossLost(){
   $('rNote').textContent=`+${num(bagged)} leaves to the shed. Fill bags quickly in the first phase, and aim where the storm is heading.`;
   $('nextDay').hidden=true; $('again').textContent='Try again'; $('again').className='primary';
   setTimeout(()=>{if(state==='over'){show('end'); $('again').focus();}},700);
+}
+
+// ---------- The Greenville moose: wanders to your biggest pile and tramples it, charges the tarp now and then,
+// and runs off when a thrown bag hits him. Five hits and he leaves for good.
+let moose=null;
+function initMoose(){return {x:-60,y:MINY+(MAXY-MINY)*0.4,dir:[1,0],hp:5,mode:'wander',t:0,away:0,charge:9,trample:0,flash:0,home:null};}
+function updateMoose(dt){
+  const M=moose; M.t+=dt; M.flash=Math.max(0,M.flash-dt*3);
+  if(M.mode==='gone') return;
+  if(M.mode==='away'){
+    M.away-=dt;
+    if(M.away<=0){const left=Math.random()<0.5; M.x=left?-60:W+60; M.y=MINY+(MAXY-MINY)*(0.2+Math.random()*0.5); M.mode='wander'; M.charge=10+Math.random()*6;}
+    return;
+  }
+  let tgt, sp=55*K*D.rival;
+  if(M.mode==='flee'){tgt=[M.x<W/2?-100:W+100,M.y]; sp=220*K;}
+  else if(M.mode==='charge'){tgt=[tp.x+tp.w/2,tp.y+tp.h/2]; sp=170*K*D.rival;}
+  else tgt=densestPile(10)||M.home||(M.home=lawnSpot(40));
+  const dx=tgt[0]-M.x, dy=tgt[1]-M.y, d=Math.hypot(dx,dy);
+  if(d>1){M.dir=[dx/d,dy/d]; const m=Math.min(d,sp*dt); M.x+=M.dir[0]*m; M.y+=M.dir[1]*m;}
+  if(M.mode==='flee'&&(M.x<-90||M.x>W+90)){M.mode=M.hp<=0?'gone':'away'; M.away=8; return;}
+  if(M.mode==='charge'&&d<14){
+    for(const l of leaves) if(l.st===0&&inTarp(l.x,l.y,6)){const a=Math.atan2(l.y-M.y,l.x-M.x)+(Math.random()-0.5); l.vx+=Math.cos(a)*420*K; l.vy+=Math.sin(a)*420*K; l.rest=0;}
+    popup('The moose charged the tarp!',M.x,M.y-40*K,false); shake(6); buzz([40,30,40]); noiseHit(120,0.7,0.4,0.6,'lowpass');
+    M.mode='wander'; M.charge=10+Math.random()*5; M.home=null;
+  }
+  if(M.mode==='wander'){
+    M.charge-=dt;
+    if(M.charge<=0){M.mode='charge'; tones([98,82],'sawtooth',0.25,0.5,0.12);}
+    if(d<10) M.home=null;
+  }
+  M.trample-=dt;
+  if(M.trample<=0&&M.mode!=='flee'){M.trample=0.25; scatterAt(M.x+M.dir[0]*16*K,M.y+M.dir[1]*16*K,24*K,0.55);}
+}
+function hitMoose(){
+  const M=moose;
+  M.hp--; M.flash=1; M.mode='flee'; shake(5); buzz(50); tones([196,147],'sawtooth',0.12,0.3,0.1);
+  if(M.hp<=0){score+=1500; popup('The moose heads back into the woods  +1500',M.x,M.y-36*K,true); award('moose');}
+  else popup(`Bonk! ${M.hp} to go`,M.x,M.y-36*K,true);
+}
+function drawMoose(){
+  const M=moose;
+  if(!M||M.mode==='gone'||M.mode==='away') return;
+  const step=Math.sin(M.t*(M.mode==='wander'?6:14));
+  ctx.save(); ctx.translate(M.x,M.y); ctx.rotate(Math.atan2(M.dir[1],M.dir[0])); ctx.scale(K,K);
+  ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(4,6,40,18,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#2e1d10';
+  for(const [lx,ly,s] of [[-18,-13,1],[-18,13,-1],[18,-13,-1],[18,13,1]]){ctx.beginPath(); ctx.arc(lx+step*4*s,ly,4.5,0,6.283); ctx.fill();}
+  ctx.fillStyle='#5a3a22'; ctx.beginPath(); ctx.ellipse(0,0,30,15,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#432a17'; ctx.beginPath(); ctx.ellipse(8,0,14,11,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#4a2f1b'; ctx.beginPath(); ctx.ellipse(34,0,13,8,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#3a2414'; ctx.beginPath(); ctx.ellipse(45,0,7,6,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#cdb88f';
+  for(const s of [-1,1]){
+    ctx.beginPath(); ctx.moveTo(30,s*6); ctx.quadraticCurveTo(26,s*22,18,s*30); ctx.lineTo(24,s*25); ctx.lineTo(27,s*33); ctx.lineTo(31,s*26); ctx.lineTo(36,s*32); ctx.lineTo(37,s*22); ctx.quadraticCurveTo(36,s*12,32,s*6); ctx.closePath(); ctx.fill();
+  }
+  if(M.flash>0){ctx.globalAlpha=M.flash*0.7; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(10,0,42,18,0,0,6.283); ctx.fill();}
+  ctx.restore();
+}
+
+// ---------- Moonlight: a dark overlay with the lantern on the rake, the porch light and the moon cut out of it.
+const darkC=document.createElement('canvas'), dctx=darkC.getContext('2d');
+function drawNight(){
+  if(!LV.night) return;
+  const w=darkC.width, h=darkC.height, s=w/W;
+  dctx.setTransform(1,0,0,1,0,0); dctx.globalCompositeOperation='source-over'; dctx.clearRect(0,0,w,h);
+  dctx.fillStyle='rgba(4,6,18,0.9)'; dctx.fillRect(0,0,w,h);
+  dctx.globalCompositeOperation='destination-out';
+  const hole=(x,y,r,a)=>{const g=dctx.createRadialGradient(x*s,y*s,0,x*s,y*s,r*s); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(0.55,`rgba(0,0,0,${a*0.85})`); g.addColorStop(1,'rgba(0,0,0,0)'); dctx.fillStyle=g; dctx.fillRect((x-r)*s,(y-r)*s,2*r*s,2*r*s);};
+  hole(rx,ry,120*K,1);
+  hole(tp.x+tp.w/2,H+10,tp.w*0.95,0.8);
+  hole(W-46*K,MINY+40*K,90*K,0.5);
+  for(const u of pickups) hole(u.x,u.y,26*K,0.8);
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(darkC,0,0,cv.width,cv.height); ctx.restore();
+  ctx.globalCompositeOperation='lighter';
+  const g=ctx.createRadialGradient(rx,ry,0,rx,ry,90*K); g.addColorStop(0,'rgba(255,190,110,0.22)'); g.addColorStop(1,'rgba(255,190,110,0)');
+  ctx.fillStyle=g; ctx.fillRect(rx-90*K,ry-90*K,180*K,180*K);
+  ctx.globalCompositeOperation='source-over';
+  const mx=W-46*K, my=MINY+40*K, mg=ctx.createRadialGradient(mx,my,0,mx,my,60*K);
+  mg.addColorStop(0,'rgba(240,236,214,0.5)'); mg.addColorStop(1,'rgba(240,236,214,0)');
+  ctx.fillStyle=mg; ctx.fillRect(mx-60*K,my-60*K,120*K,120*K);
+  ctx.fillStyle='#f3eedb'; ctx.beginPath(); ctx.arc(mx,my,15*K,0,6.283); ctx.fill();
+}
+
+// ---------- The daily lawn: one town and weekday per date, with the lawn laid out from a seed so everyone gets the same one.
+let DAILY=null;
+function mulberry32(a){return ()=>{a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296;};}
+function withSeed(seed,fn){const r=Math.random; Math.random=mulberry32(seed); try{fn();}finally{Math.random=r;}}
+function dailyInfo(date=new Date()){
+  const y=date.getFullYear(), m=date.getMonth(), d=date.getDate(), n=Math.floor(Date.UTC(y,m,d)/864e5), ids=Object.keys(LEVELS), wd=date.getDay();
+  return {key:`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,id:ids[n%ids.length],day:wd>=1&&wd<=5?wd:5,seed:Math.imul(n,2654435761)>>>0};
+}
+function dailyStreak(){
+  let n=0;
+  for(let i=0;i<400;i++){if(store.dailyLog[dailyInfo(new Date(Date.now()-i*864e5)).key]) n++; else if(i>0) break;}
+  return n;
+}
+function beginDaily(){
+  initAudio();
+  const d=dailyInfo(); DAILY=d; selected=d.id; DAY=d.day;
+  withSeed(d.seed,reset); state='play'; show(null); pushTrap();
 }
 
 // ---------- Winter: after the storm, the title, map and shed sit over a snowed-in lawn.
@@ -2011,6 +2153,8 @@ function renderTitle(){
   $('contBtn').hidden=!(r&&LEVELS[r.lvl]);
   if(r&&LEVELS[r.lvl]) $('contInfo').textContent=`${LEVELS[r.lvl].town} ${DAY_NAMES[(r.day||1)-1]} · ${fmtTime.format(r.clock)} · ${num(r.score)} pts`;
   $('shedInfo').textContent=`${num(store.bank)} leaves to spend`;
+  const di=dailyInfo(), db=store.best[`daily:${di.key}`], streak=dailyStreak();
+  $('dailyInfo').textContent=`${LEVELS[di.id].town} · ${DAY_NAMES[di.day-1]} · ${db?`best ${num(db.score)}`:'not raked yet'}${streak>1?` · ${streak}-day streak`:''}`;
 }
 
 function renderMap(){
@@ -2019,12 +2163,13 @@ function renderMap(){
   svg.setAttribute('class',store.beatBoss?'winter':'');
   const open=bossOpen();
   svg.innerHTML=MAP.states.map(s=>`<path class="st" d="${s.d}"/>`).join('')
-    +Object.entries(MAP.labels).map(([k,[x,y]])=>`<text class="lab" x="${k==='NH'?x-6:k==='ME'?x+8:k==='RI'?x-3:x}" y="${k==='NH'?y+22:k==='RI'?y-14:y}" text-anchor="middle">${k}</text>`).join('')
+    +Object.entries(MAP.labels).map(([k,[x,y]])=>`<text class="lab" x="${k==='NH'?x-6:k==='ME'?x+12:k==='RI'?x-3:x}" y="${k==='NH'?y+22:k==='RI'?y-14:k==='ME'?y+30:y}" text-anchor="middle">${k}</text>`).join('')
     +PLACES.map(p=>{const [x,y]=MAP.pts[p.id], cls=['dot',p.level?'':'soon',p.id===mapSel?'sel':''].join(' ');
       return `<g class="${cls}" data-id="${p.id}" tabindex="0" role="button" aria-pressed="${p.id===mapSel}" aria-label="${esc(p.town+', '+p.state+(p.level?'':' (coming soon)'))}" transform="translate(${x} ${y})"><circle class="halo" r="12"/><circle r="5.5"/></g>`;}).join('')
+    +`<g class="dot boss ${specialOpen('mo')?'':'soon'} ${mapSel==='mo'?'sel':''}" data-id="mo" tabindex="0" role="button" aria-pressed="${mapSel==='mo'}" aria-label="The Greenville moose${specialOpen('mo')?'':' (locked)'}" transform="translate(180.6 114.7)"><circle class="halo" r="12"/><circle r="6"/><text x="0" y="-12" text-anchor="middle" class="lab">MOOSE</text></g>`
     +`<g class="dot boss ${open?'':'soon'} ${mapSel==='ne'?'sel':''}" data-id="ne" tabindex="0" role="button" aria-pressed="${mapSel==='ne'}" aria-label="The Nor’easter${open?'':' (locked)'}" transform="translate(214 262)"><circle class="halo" r="14"/><circle r="7"/><text x="0" y="24" text-anchor="middle" class="lab">STORM</text></g>`;
   for(const g of svg.querySelectorAll('.dot')){
-    const pick=()=>{mapSel=g.dataset.id; if(LEVELS[mapSel]){selected=mapSel; DAY=mapDay=store.unlocked[mapSel]||1; reset();} else if(mapSel==='ne'&&bossOpen()){selected='ne'; DAY=1; reset();} renderMap(); svg.querySelector(`[data-id="${mapSel}"]`).focus();};
+    const pick=()=>{mapSel=g.dataset.id; if(LEVELS[mapSel]){selected=mapSel; DAY=mapDay=store.unlocked[mapSel]||1; reset();} else if(SPECIAL[mapSel]&&specialOpen(mapSel)){selected=mapSel; DAY=1; reset();} renderMap(); svg.querySelector(`[data-id="${mapSel}"]`).focus();};
     g.addEventListener('click',pick);
     g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); pick();}});
   }
@@ -2033,6 +2178,7 @@ function renderMap(){
 
 function renderPlace(){
   if(mapSel==='ne') return renderStormPlace();
+  if(mapSel==='mo') return renderMoosePlace();
   const p=PLACES.find(q=>q.id===mapSel);
   let h=`<div><p class="eyebrow">${esc(p.state)}</p><h2>${esc(p.town)}</h2></div>`;
   if(p.level){
@@ -2046,7 +2192,7 @@ function renderPlace(){
         return `<button class="day" type="button" data-day="${d}" aria-pressed="${d===mapDay}" ${locked?'disabled':''} aria-label="${DAY_NAMES[d-1]}${locked?', locked':bd?`, ${bd.stars} stars`:''}"><span>${DAY_NAMES[d-1].slice(0,3)}</span><b>${locked?'locked':bd?'★'.repeat(bd.stars)+'☆'.repeat(3-bd.stars):'new'}</b></button>`;}).join('')+'</div>';
     h+=`<p class="daydesc"><strong>${DAY_NAMES[mapDay-1]}:</strong> ${esc(DAY_DESC[p.id][mapDay-1])}${mapDay===4?' And Dale from next door is racing you: bag more than he does by dusk.':''}</p>`;
     h+=`<p class="meta">Sunset ${fmtTime.format(s.sunset)} · ${b?`best ${num(b.score)}`:'Not raked yet'}</p>`;
-    h+=`<div class="actions"><button class="primary" id="playLvl" type="button">Rake ${DAY_NAMES[mapDay-1]}</button></div>`;
+    h+=`<div class="actions"><button class="primary" id="playLvl" type="button">Rake ${DAY_NAMES[mapDay-1]}</button>${p.id==='vt'&&specialOpen('nt')?'<button class="secondary" id="nightBtn" type="button">Rake by moonlight</button>':''}</div>`;
     h+=`<p class="label">About ${esc(p.town)}</p><ul class="facts">${p.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
     const got=new Set(store.finds[p.id]||[]);
     h+=`<p class="label">Finds · ${got.size} of ${p.finds.length}</p><ul class="findlist">`
@@ -2058,10 +2204,24 @@ function renderPlace(){
   $('place').innerHTML=h;
   if(!p.level) return;
   $('playLvl').addEventListener('click',begin);
+  if($('place').querySelector('#nightBtn')) $('nightBtn').addEventListener('click',()=>{mapSel='nt'; begin();});
   for(const btn of $('place').querySelectorAll('.day')) btn.addEventListener('click',()=>{
     mapDay=DAY=+btn.dataset.day; reset(); renderPlace();
     $('place').querySelector(`[data-day="${mapDay}"]`).focus();
   });
+}
+
+function renderMoosePlace(){
+  const open=specialOpen('mo'), b=store.best[`mo:d1:${store.opts.diff}`];
+  let h=`<div><p class="eyebrow">${MOOSE.state}</p><h2>The ${MOOSE.town} moose</h2></div><p>${esc(MOOSE.desc)}</p>`;
+  if(!open){
+    h+=`<p class="meta">Finish three weeks to meet the moose · ${Object.keys(LEVELS).filter(weekDone).length} of 3</p>`;
+  }else{
+    h+=`<p class="meta">${b?`${'★'.repeat(b.stars)}${'☆'.repeat(3-b.stars)} best ${num(b.score)}`:'Not raked yet'}</p><div class="actions"><button class="primary" id="playLvl" type="button">Rake with the moose</button></div>`;
+  }
+  h+=`<p class="label">About ${MOOSE.town}</p><ul class="facts">${MOOSE.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
+  $('place').innerHTML=h;
+  if(open) $('playLvl').addEventListener('click',begin);
 }
 
 function renderStormPlace(){
@@ -2089,9 +2249,9 @@ function renderShed(){
       <button class="buy" type="button" data-up="${k}" ${max||store.bank<cost?'disabled':''}>${max?'Maxed':`Buy · ${num(cost)}`}</button><small>${u.desc}</small></div>`;
   }).join('');
   const swatches=(set,slot,color)=>Object.entries(set).map(([k,c])=>{
-    const owned=store.owned.includes(k)||(c.milestone&&store.total>=c.milestone), on=store.cos[slot]===k;
-    const label=on?'In use':owned?'Use':c.milestone?`at ${num(c.milestone)} raked`:num(c.price);
-    const off=!owned&&(c.milestone||store.bank<c.price);
+    const owned=store.owned.includes(k)||(c.milestone&&store.total>=c.milestone)||(c.prize&&totalStars()>=c.prize), on=store.cos[slot]===k;
+    const label=on?'In use':owned?'Use':c.milestone?`at ${num(c.milestone)} raked`:c.prize?`for ${c.prize} stars`:num(c.price);
+    const off=!owned&&(c.milestone||c.prize||store.bank<c.price);
     return `<button class="swatch" type="button" data-slot="${slot}" data-id="${k}" aria-pressed="${on}" ${off?'disabled':''}><i style="background:${color(c)}"></i>${c.name} <small>${label}</small></button>`;
   }).join('');
   $('tarps').innerHTML=swatches(TARPS,'tarp',c=>c.milestone?`repeating-linear-gradient(90deg,${c.fill} 0 6px,${c.edge} 6px 12px)`:c.fill);
@@ -2112,8 +2272,8 @@ function renderShed(){
   });
   for(const b of document.querySelectorAll('#tarps .swatch,#rakes .swatch')) b.addEventListener('click',()=>{
     const {slot,id}=b.dataset, set=slot==='tarp'?TARPS:RAKES, c=set[id];
-    if(!store.owned.includes(id)&&!(c.milestone&&store.total>=c.milestone)){
-      if(c.milestone||store.bank<c.price) return;
+    if(!store.owned.includes(id)&&!(c.milestone&&store.total>=c.milestone)&&!(c.prize&&totalStars()>=c.prize)){
+      if(c.milestone||c.prize||store.bank<c.price) return;
       store.bank-=c.price; store.owned.push(id);
     }
     store.cos[slot]=id; save(); renderShed();
@@ -2137,7 +2297,7 @@ function renderOptions(){
 }
 
 function goTitle(){state='title'; renderTitle(); show('title'); $('playBtn').focus();}
-function goMap(){state='map'; mapSel=selected; DAY=mapDay=Math.min(DAY,store.unlocked[selected]||1); reset(); renderMap(); show('mapScreen');}
+function goMap(){DAILY=null; state='map'; mapSel=selected; DAY=mapDay=Math.min(DAY,store.unlocked[selected]||1); reset(); renderMap(); show('mapScreen');}
 
 // A history entry during play turns the phone's back gesture into Pause instead of leaving the page.
 let trapped=false, ignorePop=false;
@@ -2151,7 +2311,8 @@ addEventListener('popstate',()=>{
 
 function begin(){
   initAudio();
-  if(LEVELS[mapSel]){selected=mapSel; DAY=mapDay;} else if(mapSel==='ne'&&bossOpen()){selected='ne'; DAY=1;}
+  DAILY=null;
+  if(LEVELS[mapSel]){selected=mapSel; DAY=mapDay;} else if(SPECIAL[mapSel]&&specialOpen(mapSel)){selected=mapSel; DAY=1;}
   store.opts.last=selected; save();
   clearRound(); reset(); state='play'; show(null); pushTrap();
 }
@@ -2172,10 +2333,11 @@ $('mapBack').addEventListener('click',goTitle);
 $('optBack').addEventListener('click',goTitle);
 $('pauseBtn').addEventListener('click',pause);
 $('resumeBtn').addEventListener('click',resume);
-$('restartBtn').addEventListener('click',()=>{mapSel=selected; mapDay=DAY; begin();});
+$('restartBtn').addEventListener('click',()=>{if(DAILY) return beginDaily(); mapSel=selected; mapDay=DAY; begin();});
 $('quitBtn').addEventListener('click',()=>{clearRound(); leaveTrap(); goMap();});
-$('again').addEventListener('click',()=>{mapSel=selected; mapDay=DAY; begin();});
+$('again').addEventListener('click',()=>{if(DAILY) return beginDaily(); mapSel=selected; mapDay=DAY; begin();});
 $('nextDay').addEventListener('click',()=>{mapSel=selected; mapDay=Math.min(5,DAY+1); begin();});
+$('dailyBtn').addEventListener('click',beginDaily);
 $('shedBtn').addEventListener('click',()=>{state='shed'; renderShed(); show('shed'); $('shedBack').focus();});
 $('shedBack').addEventListener('click',goTitle);
 $('toMap').addEventListener('click',goMap);
@@ -2269,8 +2431,8 @@ function whee(){
 function pos(e){return [e.clientX,e.clientY];}
 cv.addEventListener('pointerdown',e=>{
   if(state==='ending'&&ending&&ending.sub==='snowman'){initAudio(); smDown(...pos(e)); try{cv.setPointerCapture(e.pointerId);}catch(_){} return;}
-  if(state==='play'&&boss&&!grab){
-    const [x,y]=pos(e), b=boss.bags.find(o=>Math.hypot(o.x-x,o.y-y)<34*K);
+  if(state==='play'&&TH&&!grab){
+    const [x,y]=pos(e), b=TH.bags.find(o=>Math.hypot(o.x-x,o.y-y)<34*K);
     if(b){grab={b,id:e.pointerId,pts:[[x,y,performance.now()]]}; try{cv.setPointerCapture(e.pointerId);}catch(_){} return;}
   }
   if(state!=='play'||drag) return;

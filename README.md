@@ -12,7 +12,13 @@ Dale, the neighbor's kid, races you every Thursday with his own tarp and the sam
 
 The Nor'easter (unlocked by finishing all six weeks, or Options > Playtest) is the final storm: rake the leaves it throws onto the tarp to fill bags, flick bags up to hit it 12 times. Sleet at 8 hits left, fog and lightning at 4. Beating it turns the map to winter, rolls credits, and ends on a snow day: roll three snowballs into a snowman and push it off the hill.
 
-Polish: screen shake, leaf crunch sounds, vibration on Android, and twelve achievements shown in the shed.
+The Greenville moose (Maine, unlocked after three weeks) is a mid-boss: he tramples piles and charges the tarp; five thrown bags drive him off for good.
+
+The daily lawn picks one town and weekday per date and lays the lawn out from a seed, so everyone gets the same one; it tracks a streak.
+
+Three stars on all 30 days unlocks Stowe by moonlight (rake by the light of a lantern on your rake) and a moonlit silver rake handle.
+
+Polish: screen shake, leaf crunch sounds, vibration on Android, and fifteen achievements shown in the shed.
 
 Scoring: 10 points per leaf, pile multipliers (x2/x3/x5) for bagging a big pile at once, a daylight bonus for clearing early, 250 per hidden find. Stars at 50/75/90% cleared, or 3 for clearing early. Acorns give power-ups (T big tarp, R wide rake, S sun stop); pinecones shrink the rake. Difficulty (Relaxed/Standard/Hard) is in Options. Best scores per lawn and difficulty, the finds album, and an interrupted round (Continue) are saved in localStorage. The map outlines come from the us-atlas Census data, projected with d3-geo.
 
