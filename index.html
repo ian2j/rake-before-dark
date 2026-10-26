@@ -304,7 +304,7 @@ const LEVELS={
       {id:'meq',e:'🪙',name:'2003 Maine quarter',fact:'It shows Pemaquid Point Light and a schooner under sail.'},
       {id:'pack',e:'🎒',name:'Daypack',fact:'John D. Rockefeller Jr. paid for Acadia’s 45 miles of carriage roads, built between 1913 and 1940.'}]},
   ma:{id:'ma',town:'Salem',state:'Massachusetts',lat:42.5195,lon:-70.8967,
-    desc:'Halloween dusk in the Witch City. After sunset, trick-or-treaters head straight for your biggest pile. Rake over them to shoo them off.',
+    desc:'Halloween evening in the Witch City. Trick-or-treaters head straight for your biggest pile. Rake over them to shoo them off.',
     wind:1,gustEvery:[11,17],snow:false,kids:true,
     leafWeights:[0.24,0.22,0.18,0.1,0.06,0.2],
     tree:['#8e2a16','#a8331a','#c4491f','#8a4a25','#d0682a'],treeDark:'#5e2412',
@@ -825,9 +825,9 @@ function update(dt){
   else if(elapsed>=D.secs) finish(false);
 }
 
-// Trick-or-treaters come out at sunset, walk to the densest patch of leaves off the tarp, jump in and scatter it.
-function densestPile(){
-  let best=11, at=null;
+// Trick-or-treaters come out early in the evening, walk to the densest patch of leaves off the tarp, jump in and scatter it.
+function densestPile(min){
+  let best=min-1, at=null;
   const gh=grid.length/gw;
   for(let cy=0;cy<gh;cy++) for(let cx=0;cx<gw;cx++){
     const n=grid[cy*gw+cx];
@@ -839,17 +839,18 @@ function densestPile(){
   return at;
 }
 function updateKids(dt,p){
-  if(p>pSun-0.05&&playT>=nextKid){
+  // They come out early in the evening. With no real pile on the lawn a kid heads for the leafiest patch, or failing that a random spot.
+  if(p>0.12&&playT>=nextKid){
     const left=Math.random()<0.5;
-    kids.push({x:left?-24:W+24,y:MINY+60+Math.random()*Math.max(1,MAXY-MINY-200),e:KID_COSTUMES[(Math.random()*KID_COSTUMES.length)|0],st:'seek',t:0,jt:0,ph:Math.random()*6.283});
+    kids.push({x:left?-24:W+24,y:MINY+60+Math.random()*Math.max(1,MAXY-MINY-200),e:KID_COSTUMES[(Math.random()*KID_COSTUMES.length)|0],st:'seek',t:0,jt:0,ph:Math.random()*6.283,home:lawnSpot(40)});
     nextKid=playT+(7+Math.random()*4)*D.gustGap;
     if(kidsT<0) kidsT=playT;
   }
-  const target=kids.some(k=>k.st==='seek')?densestPile():null;
+  const pile=kids.some(k=>k.st==='seek')?densestPile(12)||densestPile(4):null;
   for(const k of kids){
     k.t+=dt;
     if(k.st==='seek'){
-      if(!target){k.st='leave'; continue;}
+      const target=pile||k.home;
       const dx=target[0]-k.x, dy=target[1]-k.y, d=Math.hypot(dx,dy), sp=90*K*dt;
       if(d<=sp+2){
         k.x=target[0]; k.y=target[1]; k.st='jump'; k.jt=0;
@@ -866,8 +867,7 @@ function updateKids(dt,p){
     }else if(k.st==='jump'){
       k.jt+=dt; if(k.jt>0.7) k.st='leave';
     }else{
-      const ex=k.x<W/2?-40:W+40, sp=(k.st==='shoo'?210:95)*K*dt;
-      k.x+=Math.sign(ex-k.x)*sp;
+      k.x+=(k.x<W/2?-1:1)*(k.st==='shoo'?210:95)*K*dt;
     }
   }
   kids=kids.filter(k=>k.x>-60&&k.x<W+60);
