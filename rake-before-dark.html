@@ -4,9 +4,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shrikhand&family=DM+Mono:wght@400;500&family=Karla:wght@400;600;700&display=swap">
 <style>
-/* Layout: full-bleed top-down lawn canvas; a thin HUD strip pinned to the top; centered cards for lawn choice and results. Single dusk theme by choice. */
+/* Layout: full-bleed top-down lawn canvas; a thin HUD strip pinned to the top; centered cards for menus, the map and results. Single dusk theme by choice. */
 :root{
-  --dusk:#1c1530; --panel:#251b38; --raise:#2f2346; --line:rgba(255,210,122,.2); --ember:#f0883a; --gold:#ffd27a; --paper:#fbf1e1; --muted:#c9b8d4;
+  --dusk:#1c1530; --panel:#251b38; --raise:#2f2346; --land:#33264a; --line:rgba(255,210,122,.2); --ember:#f0883a; --gold:#ffd27a; --paper:#fbf1e1; --muted:#c9b8d4;
   --display:'Shrikhand',Georgia,serif; --body:'Karla',system-ui,sans-serif; --mono:'DM Mono',ui-monospace,monospace;
   color-scheme:dark;
 }
@@ -27,16 +27,19 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .sunbar .mark{position:absolute;top:-5px;width:2px;height:16px;background:var(--paper);opacity:.75}
 .sunbar .mark::after{content:"sunset";position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:.65rem;letter-spacing:.06em;color:var(--muted)}
 .count{text-align:right}
-#mute{pointer-events:auto;font:500 .72rem var(--mono);color:var(--paper);background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:999px;padding:.45rem .7rem;cursor:pointer}
-button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+#pauseBtn{pointer-events:auto;font:600 .8rem var(--body);color:var(--paper);background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:999px;padding:.45rem .8rem;cursor:pointer}
+button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 
-.chip{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 74px);font:600 .8rem var(--body);letter-spacing:.08em;text-transform:uppercase;
-  color:#1c1530;background:var(--paper);padding:.4rem .85rem;border-radius:999px;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.3);white-space:nowrap}
+.chips{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-wrap:wrap;justify-content:center;gap:6px;pointer-events:none;padding-inline:16px}
+.chip{font:600 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:#1c1530;background:var(--paper);padding:.35rem .75rem;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.good{background:var(--gold)}
+.chip.bad{background:#c98ab0}
 
-.overlay{position:fixed;inset:0;display:grid;place-items:center;overflow-y:auto;background:rgba(20,12,32,.42);
+.overlay{position:fixed;inset:0;display:grid;place-items:center;overflow-y:auto;background:rgba(20,12,32,.5);
   padding-block:calc(env(safe-area-inset-top,0px) + 20px) calc(env(safe-area-inset-bottom,0px) + 20px);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.card{max-width:26rem;width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.45);display:grid;gap:14px}
+.card{max-width:26rem;width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.45);display:grid;gap:14px;min-width:0}
+.card.wide{max-width:50rem}
 .eyebrow{margin:0;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .card h1,.card h2{margin:0;font-family:var(--display);font-weight:400;color:var(--gold);line-height:1.05;text-wrap:balance}
 .card h1{font-size:clamp(2.1rem,9vw,2.8rem);text-shadow:0 3px 0 #a3461b}
@@ -45,16 +48,58 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .card .tip{font-size:.88rem;color:var(--muted)}
 .card b{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums}
 .actions{display:flex;flex-wrap:wrap;gap:10px}
+.menu{display:grid;gap:10px}
 .primary{font:700 1.05rem var(--body);color:#2a1405;background:var(--ember);border:0;border-radius:999px;padding:.8rem 1.6rem;cursor:pointer;box-shadow:0 3px 0 #a3461b}
 .primary:active{transform:translateY(2px);box-shadow:0 1px 0 #a3461b}
 .secondary{font:600 1rem var(--body);color:var(--paper);background:transparent;border:1px solid var(--line);border-radius:999px;padding:.75rem 1.3rem;cursor:pointer}
+.menu .secondary small{display:block;font:500 .75rem var(--mono);color:var(--muted);margin-top:2px}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.back{font:600 .85rem var(--body);color:var(--muted);background:none;border:0;padding:.3rem 0;cursor:pointer}
+.back::before{content:"← "}
 
-.levels{display:grid;gap:8px}
-.lvl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;text-align:left;font:inherit;color:var(--paper);background:var(--raise);border:1px solid transparent;border-radius:12px;padding:12px 14px;cursor:pointer}
-.lvl[aria-checked="true"]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
-.lvl strong{font-weight:700}
-.lvl .meta{font:500 .78rem var(--mono);color:var(--gold);text-align:right;white-space:nowrap}
-.lvl .desc{grid-column:1/-1;font-size:.85rem;color:var(--muted);line-height:1.4}
+.how{font-size:.88rem;color:var(--muted)}
+.how summary{cursor:pointer;color:var(--paper);font-weight:600}
+.how ul{margin:.6rem 0 0;padding-left:1.1rem;display:grid;gap:.35rem;line-height:1.45}
+.how b{color:var(--gold)}
+
+.mapgrid{display:grid;gap:18px;align-items:start}
+@media (min-width:640px){.mapgrid{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
+#mapSvg{width:100%;max-height:44vh;display:block}
+@media (min-width:640px){#mapSvg{max-height:62vh}}
+.st{fill:var(--land);stroke:rgba(255,210,122,.38);stroke-width:.8;stroke-linejoin:round}
+.lab{font:700 9px var(--body);fill:var(--muted);letter-spacing:.1em;pointer-events:none}
+.dot{cursor:pointer}
+.dot circle{fill:var(--ember)}
+.dot .halo{fill:rgba(240,136,58,.22)}
+.dot.sel circle{fill:var(--gold)}
+.dot.sel .halo{fill:rgba(255,210,122,.25);animation:pulse 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.dot.soon circle{fill:var(--dusk);stroke:var(--muted);stroke-width:1.5}
+.dot.soon .halo{fill:transparent;stroke:none}
+.dot.soon.sel circle{stroke:var(--gold)}
+@keyframes pulse{50%{transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){.dot.sel .halo{animation:none}}
+.place{display:grid;gap:12px;min-width:0}
+.place .meta{font:500 .82rem var(--mono);color:var(--gold)}
+.facts{margin:0;padding-left:1.1rem;display:grid;gap:.4rem;font-size:.9rem;line-height:1.45}
+.findlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.findlist li{display:grid;grid-template-columns:1.8rem minmax(0,1fr);gap:8px;align-items:start;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:.85rem}
+.findlist li>span{font-size:1.2rem;line-height:1.2;text-align:center}
+.findlist small{display:block;color:var(--muted);line-height:1.4;margin-top:2px}
+.findlist li.missing{color:var(--muted)}
+.label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0}
+
+.seg{border:0;margin:0;padding:0;display:grid;gap:8px}
+.seg legend{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.seg .opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.seg label{display:block;text-align:center;font-weight:600;background:var(--raise);border:1px solid transparent;border-radius:10px;padding:.6rem .3rem;cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:var(--gold)}
+.seg label:has(input:checked){border-color:var(--gold)}
+.seg label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:2px}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}
+.toggle input{width:1.15rem;height:1.15rem;accent-color:var(--ember)}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9rem}
+.confirm .secondary{padding:.45rem .9rem;font-size:.9rem}
 
 .stars{font-size:2rem;letter-spacing:.15em;color:var(--gold);line-height:1}
 .stars .off{color:rgba(255,255,255,.18)}
@@ -74,22 +119,75 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 <canvas id="lawn"></canvas>
 <div id="safe"></div>
 
-<div class="hud">
+<div class="hud" id="hud">
   <div class="clock"><b id="clock">5:09 PM</b><small id="sunlabel">Sunset 5:49 · Dusk 6:19</small></div>
   <div class="sunbar"><div class="fill" id="sunfill"></div><i class="mark" id="sunmark"></i></div>
   <div class="count"><b id="score">0</b><small id="clear">0% clear</small></div>
-  <button id="mute" type="button" aria-pressed="false">Sound on</button>
+  <button id="pauseBtn" type="button">Pause</button>
 </div>
-<div class="chip" id="banner" hidden>Gust incoming</div>
+<div class="chips" id="chips"></div>
 
-<div class="overlay" id="start">
+<div class="overlay" id="title">
   <div class="card">
     <p class="eyebrow" id="datelabel">Today</p>
     <h1>Rake Before Dark</h1>
-    <p>Drag across the lawn to rake. Leaves that settle on the blue tarp go in the bag. Clear the lawn before civil dusk.</p>
-    <div class="levels" id="levels" role="radiogroup" aria-label="Choose a lawn"></div>
-    <p class="tip">Dump a big pile on the tarp at once for a multiplier. Clear the lawn early and the daylight you have left scores a bonus. Things are hidden under the leaves.</p>
-    <div class="actions"><button class="primary" id="go" type="button">Start raking</button></div>
+    <p>Rake New England lawns clean before the sun goes down.</p>
+    <div class="menu">
+      <button class="primary" id="playBtn" type="button">Play</button>
+      <button class="secondary" id="contBtn" type="button" hidden>Continue<small id="contInfo"></small></button>
+      <button class="secondary" id="optBtn" type="button">Options</button>
+    </div>
+    <details class="how">
+      <summary>How to play</summary>
+      <ul>
+        <li>Drag across the lawn to rake. Leaves that settle on the blue tarp go in the bag.</li>
+        <li>Dump a big pile on the tarp at once for a ×2, ×3 or ×5 multiplier.</li>
+        <li>Clear the lawn before civil dusk. Daylight you have left scores a bonus.</li>
+        <li>Rake over acorns for power-ups: <b>T</b> big tarp, <b>R</b> wide rake, <b>S</b> sun stop. Pinecones are sticky with pitch and shrink your rake.</li>
+        <li>Things are hidden under the leaves. Each one you find goes in that town's album.</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<div class="overlay" id="mapScreen" hidden>
+  <div class="card wide">
+    <div class="cardhead"><button class="back" id="mapBack" type="button">Menu</button><p class="eyebrow" id="diffTag">Standard</p></div>
+    <div class="mapgrid">
+      <svg id="mapSvg" viewBox="0 0 300 360" role="group" aria-label="Map of New England"></svg>
+      <div class="place" id="place"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="options" hidden>
+  <div class="card">
+    <div class="cardhead"><button class="back" id="optBack" type="button">Menu</button></div>
+    <h2>Options</h2>
+    <fieldset class="seg">
+      <legend>Difficulty</legend>
+      <div class="opts" id="diffOpts"></div>
+    </fieldset>
+    <p class="tip" id="diffDesc"></p>
+    <label class="toggle"><input type="checkbox" id="soundOpt"> Sound</label>
+    <div class="confirm">
+      <button class="secondary" id="resetBtn" type="button">Reset progress</button>
+      <span id="resetAsk" hidden>Erase best scores and finds? <button class="secondary" id="resetYes" type="button">Erase</button> <button class="secondary" id="resetNo" type="button">Keep</button></span>
+      <span id="resetDone" class="tip" hidden>Progress erased.</span>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pause" hidden>
+  <div class="card">
+    <p class="eyebrow" id="pauseWhere">Stowe</p>
+    <h2>Paused</h2>
+    <div class="menu">
+      <button class="primary" id="resumeBtn" type="button">Resume</button>
+      <button class="secondary" id="restartBtn" type="button">Restart lawn</button>
+      <button class="secondary" id="quitBtn" type="button">Quit to map</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="soundPause"> Sound</label>
   </div>
 </div>
 
@@ -108,7 +206,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     <p class="tip" id="rNote"></p>
     <div class="actions">
       <button class="primary" id="again" type="button">Rake again</button>
-      <button class="secondary" id="change" type="button">Change lawn</button>
+      <button class="secondary" id="toMap" type="button">Map</button>
     </div>
   </div>
 </div>
@@ -121,7 +219,7 @@ const scrape=document.createElement('canvas'), sctx=scrape.getContext('2d');
 const snow=document.createElement('canvas'), nctx=snow.getContext('2d');
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const TZ='America/New_York', GAME_SECONDS=90, LEAD_MIN=40, BAG_SIZE=100, LEAF_PTS=10, FIND_PTS=250, DAYLIGHT_PTS=40, rad=Math.PI/180;
+const TZ='America/New_York', LEAD_MIN=40, BAG_SIZE=100, LEAF_PTS=10, FIND_PTS=250, DAYLIGHT_PTS=40, EDGE=28, rad=Math.PI/180;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -129,30 +227,70 @@ const gauss=()=>Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.
 const fmtTime=new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'});
 const fmtShort=ms=>fmtTime.format(ms).replace(/\s?[AP]M$/,'');
 const num=n=>n.toLocaleString('en-US');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const EMOJI_FONT='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+
+// New England states, projected (conic conformal) from the US Census atlas.
+const MAP={"w":300,"h":360,"states":[{"id":"ME","d":"M228.6,180.5L230.5,180.1L229.6,181.8ZM223.7,182.5L224.5,178.7L228.1,182.6L226.1,184.7ZM222.3,172.7L222.6,170.8L224.2,174ZM210.6,178.9L212.5,178.7L213,180.6ZM208.5,199.3L209.5,197.6L209.8,201ZM206.8,185.6L207.9,183.6L211.2,181.5L212.8,183.7L211.6,184.1L213.6,187.6L212.2,189.4L209.7,190.1L208,189.1L208.7,187.9L208.2,185.6ZM205.8,178.2L207.5,175L207.7,172.1L208.9,170.9L209.7,172.1L208.5,173.7L208.7,175.4L207.7,178.6L206.4,180ZM140.3,242.8L135.4,239.2L135.4,236L136.2,234.1L130.5,228.3L129.2,225.9L130.3,221.3L129.8,220.8L130.6,216.8L129.7,215.7L129,201.5L128.9,197.4L127.2,158.2L125,123.6L127.8,122.9L127.8,121.4L131.2,123.3L132,127L133.5,127.6L135.2,123.7L135.4,119.8L134.6,118.5L136.2,116.9L138.9,119L141.7,119.4L141.8,117.6L138.6,113.8L138.4,112.4L141.3,107.5L144.6,104.2L145.7,104.3L147.7,102.4L150.8,100.6L149.6,97.4L152.4,94.3L155.4,92.2L156,89.7L155.1,88.4L153.2,88.4L153.2,85.4L154.5,83.7L153.4,83L155.3,80.7L156,78.6L154,76.6L156.9,68.8L159.1,67.3L160.9,64.5L162.3,64.2L164.3,49.3L191.4,8L193,8.1L196.6,9.7L198,9.5L197.7,12.2L198,18.6L198.5,19.4L203.4,22.6L206.6,20.5L210,19.1L213.6,18.8L214.9,16.4L218.8,15.8L222.1,16.2L221.9,13.4L224,12.3L227.2,12.4L230.3,13.9L230.8,15.4L235.2,18.3L240.2,24.1L240.2,24.8L243.9,27L245,51.9L246.8,83.5L246.8,86.7L248.1,88.1L246.2,89.9L248.2,93L246.3,94.7L246.7,100.9L249.8,101.6L250.1,100.6L251.6,103.2L254.2,104.3L258.2,105.2L260,104.2L261.2,107L261.5,109.6L259.8,109.3L258.3,110.3L259.4,113.4L261.7,116.2L260.7,119.6L259.4,121.5L262.7,126.6L262.8,127.7L265.3,129.4L267,128L267,125.9L269.5,127.2L272.1,127.2L273.9,129.6L274.9,131.9L273.8,132.6L275.2,134L277.1,138.4L279.2,140L279.6,145.4L278.1,147.7L276.8,147.7L276.3,149.2L272.3,154.6L269.1,155.9L269.7,156.8L267.6,157.3L268.4,155.4L267.6,151.5L264,153.1L265.8,155.6L264.3,157.7L262.7,157.1L261.1,159.9L259.3,159.1L258,159.7L258.3,161.3L260.6,163L257.7,165.8L255.8,163.8L254.9,161.2L253.2,161.7L251.7,163.4L250.7,160.8L249.8,163.6L248.6,164.3L247.7,167.7L246.7,166.9L246,169.1L245.4,167.3L242.7,169.7L242,168.5L240.6,172.8L238.3,171.1L238.2,169.4L235.4,170.1L235.8,173.1L233.7,176.4L235.3,177.8L230.6,178.8L227.4,177.4L225,172.6L225.8,171.3L228.7,169.9L227.4,167.9L225.7,169.6L225.9,167.6L224,168L220.8,170.6L221.6,172.2L220.8,174.2L222.8,177.2L222.5,179.2L219.5,182.9L220.7,183.3L219.1,184.8L220.7,187.3L220.2,190.5L218,191L217.4,187.1L218.3,186.9L217.8,184.4L215.4,182.5L214.7,179.6L216.7,177.2L214,175.4L213.4,173.8L211,174.8L211,169.7L212.4,167.6L212.5,165.3L211.5,164.7L210.6,166.9L208.8,168.7L207.2,167.3L206.3,168.8L204.3,169L206.3,172.7L206,174.9L204.4,175.9L203.1,179.2L202.7,182.5L201,186.1L203.6,187.4L201.9,188.8L203.3,191.3L202,193.1L198.3,193L196.6,196.3L194.5,196.4L194.3,199.1L192.8,199.5L192.8,197.2L193.7,195.5L190.4,196.8L191,193.8L188.6,194.3L188.8,196.7L186.6,198.4L186,200.7L184.3,198.4L184.1,200.6L182,202.1L180.4,200.9L180,204L178.2,201.7L176.5,205.9L172.7,208.1L171.9,204.3L169.7,204.1L167.7,206.1L167,207.9L164.3,207.7L163.3,210L160.6,209.8L159.2,212.1L158.8,214.4L159.6,215.7L158.5,217.2L156.7,215.9L153.6,217.3L152.4,219.4L153.3,222.5L150.8,225.2L151.3,226.7L149.3,227.8L147.4,227.6L146,228.8L144.6,233.3L145.3,234.1L143.4,237.8L143.5,238.8L141.6,242.2Z"},{"id":"MA","d":"M158.3,335.5L160.1,336.5L164.3,336.2L166.9,335.4L168.5,332.2L170.9,336.9L169.4,339.1L164.6,339L158.7,336.3ZM136,333.4L138.6,333.4L141.3,329.3L145.1,326.5L146.7,327.2L147.7,330.4L149.9,331.6L151.3,329.7L151.2,333.5L145.4,333.6L140.9,334L138.4,336.2ZM40.7,258.9L72.1,260.4L99.9,261.6L117.6,262.2L118.9,260.1L121.9,260L121.7,257.2L123.8,255.6L126.5,256.4L127.7,253.5L132.7,252L134.9,253.4L136,252.8L136.3,256.1L137.6,262.3L141.1,264.4L142.8,262.4L144.7,264L142.5,268.1L139.3,268.4L134,270.1L135.7,272.4L133.2,274.7L132.2,274.2L131.5,276.9L130.9,275.1L129.4,277.5L131,280.9L129.1,280.4L128.5,281.7L129.6,282.9L128.9,284.1L130.9,284.7L131.7,283.1L133.7,282.7L135,284.9L138.4,286.1L140.1,288L140.4,290.1L143.4,294.3L143.3,296.6L141,299.7L144,302L145.7,301.6L146.9,302.7L148,306.5L147.4,308.8L149.2,310.9L152.5,312.5L157.4,313L158.7,314L161.3,312L164,311.6L167.8,310L168.7,308.8L168.5,305.2L167.6,302.5L165.7,303.9L165.7,299.5L164.9,297L162.8,295.5L160.8,297.6L159.2,294.9L161.1,294.4L164,295.2L167.3,297.8L170,303.3L171.4,308.7L171.8,315L169.7,320.9L169.5,322.9L168.5,322.5L170.1,317.4L169.1,316.4L165.4,316.6L159.3,318.6L155,318.3L154,319.6L151.6,319.9L149.5,322.8L144.8,323.3L140,326.3L137.7,328.5L134.7,329.8L131.4,330.5L132.3,329.3L137.3,327.7L139.6,325.6L143,323.3L143.7,321.5L143.3,316.1L144.1,314.2L140.4,313.1L140.5,315.8L139.5,315.2L138.9,317.4L136.9,317.3L137.2,318.8L132.8,319.3L131.3,324.9L127.7,326L126,325.2L124.6,325.8L124.1,317.2L121.5,316.4L120.4,314.5L119,312.4L116.3,310.9L115.5,308.3L115.8,304.6L114.1,304.9L114.1,298.2L97.7,298.8L97.5,297.9L68.9,297.1L59.9,296.9L59.4,298.7L57.5,298.9L57.6,296.9L50,296.6L33.3,295.6L31.2,295.6L30.4,293.7L35.6,275.8Z"},{"id":"CT","d":"M31.2,295.6L33.3,295.6L50,296.6L57.6,296.9L57.5,298.9L59.4,298.7L59.9,296.9L68.9,297.1L97.5,297.9L97.7,298.8L98.1,313.8L98,320.6L97.6,330.1L95.8,330.5L96.3,334L95.1,335.3L91.7,334.3L88.7,335.4L86.1,335.2L84.2,336.3L81.9,335L81.1,336.7L74,338.2L71.5,337.3L67.6,338.7L66.7,337.8L63,337.7L62,338.9L59.4,337.8L53.7,338.9L53.3,336.2L52,336.9L49.2,340.6L47.5,340.6L44.3,343.9L42.4,342.8L38.9,345.3L37.9,344.7L34.6,345.9L35.3,347L33.8,348.4L29.6,348.8L26.4,351.2L25.1,350.5L22.9,352L23.1,350.5L20.4,345.8L30.3,340.1L27.7,335.6L28.4,328.3L29.4,314.8Z"},{"id":"NH","d":"M109.4,139.2L109.8,136.1L112.3,133.1L111.9,132.5L113.3,129.1L111.6,127.4L114,126.9L114.5,125.7L117.5,123.8L119.5,126.6L123.3,126.8L125,123.6L127.2,158.2L128.9,197.4L129,201.5L129.7,215.7L130.6,216.8L129.8,220.8L130.3,221.3L129.2,225.9L130.5,228.3L136.2,234.1L135.4,236L135.4,239.2L140.3,242.8L136.2,250.8L136,252.8L134.9,253.4L132.7,252L127.7,253.5L126.5,256.4L123.8,255.6L121.7,257.2L121.9,260L118.9,260.1L117.6,262.2L99.9,261.6L72.1,260.4L70.8,258L70,258.4L68.4,253.7L69.7,250.4L69.8,247.8L71.6,247.4L72.8,245.3L72,243L73.2,241.5L72.6,238.5L73.2,232.2L74.9,229.3L74.1,226.6L75.6,220.4L74.9,218.8L75.6,215.5L77.7,214L78.6,209L79.8,207L82.5,205.1L83.3,203.1L83.2,200.2L85.8,197.1L85.9,193.2L89.2,188.1L89.2,186L87.8,182.9L88.7,180.3L87.9,178.7L89.3,175.9L94,174.5L95.4,175.1L97.6,174.1L98.3,171.8L101.5,171.1L103.4,169.4L104.4,167.3L106.6,166.3L105.8,163.6L107.3,163L107.5,159.7L106.2,158L104.7,153.3L106.7,150.9L107.3,148L109.7,144.6L108,140.5Z"},{"id":"VT","d":"M40.3,138.6L49.9,138.5L65.4,138.8L70.7,139.3L79.1,139.6L109.4,139.2L108,140.5L109.7,144.6L107.3,148L106.7,150.9L104.7,153.3L106.2,158L107.5,159.7L107.3,163L105.8,163.6L106.6,166.3L104.4,167.3L103.4,169.4L101.5,171.1L98.3,171.8L97.6,174.1L95.4,175.1L94,174.5L89.3,175.9L87.9,178.7L88.7,180.3L87.8,182.9L89.2,186L89.2,188.1L85.9,193.2L85.8,197.1L83.2,200.2L83.3,203.1L82.5,205.1L79.8,207L78.6,209L77.7,214L75.6,215.5L74.9,218.8L75.6,220.4L74.1,226.6L74.9,229.3L73.2,232.2L72.6,238.5L73.2,241.5L72,243L72.8,245.3L71.6,247.4L69.8,247.8L69.7,250.4L68.4,253.7L70,258.4L70.8,258L72.1,260.4L40.7,258.9L39.7,255.9L40.3,250.8L41.6,231.6L42.2,216L40.4,214.6L40.2,212.2L37.6,212.1L36.5,215.1L35.2,213.9L36.3,208.7L38.6,204.4L37,201.7L37.7,198.8L36.4,195.7L36.7,191L35.5,189.8L37.4,182.2L40.1,179.3L40.7,177.7L39.8,172.5L41.5,168.9L41.1,165.7L38.6,161.7L38.1,158.4L39,152.9L40.4,150.4L38.7,147.7L40.3,143.5Z"},{"id":"RI","d":"M121.5,316.4L124.1,317.2L124.6,325.8L121.7,327.9L120.8,323.3L121.1,320.4L119.7,319.4L120,326.6L117.6,326.5L117.3,328.1L115.9,328.5L115.7,326L118,321.6L119.1,318.5ZM114.8,317.2L115.6,316.9L117.1,319.2L116.4,319.6ZM113.4,327.8L114.3,325.5L113.7,324.5L114.4,321.9L115,322.8L115,326.6ZM105,343.8L106.6,340.2L107.3,340.8L107.4,344.3ZM95.1,335.3L96.3,334L95.8,330.5L97.6,330.1L98,320.6L98.1,313.8L97.7,298.8L114.1,298.2L114.1,304.9L115.8,304.6L115.5,308.3L116.3,310.9L119,312.4L120.4,314.5L120,316.6L118,318.5L117.1,316.6L117.7,315L115,312.5L113.8,310.7L114.6,316.6L111.4,315.8L113.1,317.6L113.3,321L111.6,321.5L112.7,323.9L112.7,327.2L111.3,329.2L110.1,332.6L108.4,332.3L104.6,333.1L100.7,334.7L95.3,336Z"}],"pts":{"vt":[64.5,168],"nh":[121.5,185.3],"me":[234.5,170],"ma":[133.1,271.5]},"labels":{"ME":[194,120.2],"MA":[98,285.7],"CT":[60.8,319],"NH":[106.4,210],"VT":[65,189],"RI":[107.4,316.5]}};
+
+const DIFFS={
+  relaxed:{name:'Relaxed',desc:'Two minutes of daylight, softer wind, fewer leaves falling, more acorns.',secs:120,wind:0.65,gustGap:1.4,fall:0.6,power:1.4,pine:0.5},
+  standard:{name:'Standard',desc:'Ninety seconds of daylight. Gusts and falling leaves as intended.',secs:90,wind:1,gustGap:1,fall:1,power:1,pine:1},
+  hard:{name:'Hard',desc:'Seventy-five seconds, stronger and more frequent gusts, more pinecones.',secs:75,wind:1.3,gustGap:0.8,fall:1.3,power:0.8,pine:1.6}
+};
+
+const POWERS={
+  T:{name:'Big tarp',dur:7,good:true},
+  R:{name:'Wide rake',dur:8,good:true},
+  S:{name:'Sun stop',dur:6,good:true},
+  P:{name:'Sticky pitch',dur:6,good:false}
+};
 
 // Leaf colors: red, red-orange, orange, amber, yellow, brown. Each lawn weights them to its trees.
 const LEVELS={
-  vt:{id:'vt',name:'Stowe, Vermont',lat:44.4654,lon:-72.6874,
+  vt:{id:'vt',town:'Stowe',state:'Vermont',lat:44.4654,lon:-72.6874,
     desc:'Golden hour under a sugar maple. Gentle gusts.',
     wind:1,gustEvery:[10,17],snow:false,
     leafWeights:[0.26,0.24,0.2,0.14,0.09,0.07],
     tree:['#9a2a17','#b5341b','#c94c20','#dc6a28','#e58d31'],treeDark:'#7a2414',
-    finds:[{id:'mitten',e:'🧤',name:'Wool mitten'},{id:'cowbell',e:'🔔',name:'Cowbell'},{id:'cap',e:'🧢',name:'Red Sox cap'},
-      {id:'quarter',e:'🪙',name:'2001 Vermont quarter'},{id:'creemee',e:'🍦',name:'Dropped maple creemee'}]},
-  nh:{id:'nh',name:'Jackson, New Hampshire',lat:44.1442,lon:-71.1853,
+    facts:['Mount Mansfield, Vermont’s highest peak at 4,393 feet, rises just west of town.',
+      'Vermont makes more maple syrup than any other state, roughly half of the US total.',
+      'Sugar maples turn orange and red because cool, sunny autumn days make them produce red pigments called anthocyanins.'],
+    finds:[{id:'mitten',e:'🧤',name:'Wool mitten',fact:'Lost on the first cold evening of the season, like every year.'},
+      {id:'cowbell',e:'🔔',name:'Cowbell',fact:'Dairy farming cleared and shaped much of Vermont’s open hillside.'},
+      {id:'cap',e:'🧢',name:'Red Sox cap',fact:'Fenway Park, home of the Red Sox since 1912, is the oldest ballpark in Major League Baseball.'},
+      {id:'quarter',e:'🪙',name:'2001 Vermont quarter',fact:'It shows Camel’s Hump behind sugar maples hung with sap buckets.'},
+      {id:'creemee',e:'🍦',name:'Dropped maple creemee',fact:'Creemee is the Vermont word for soft serve, and maple is the classic flavor.'}]},
+  nh:{id:'nh',town:'Jackson',state:'New Hampshire',lat:44.1442,lon:-71.1853,
     desc:'An early snowstorm rolls in off the Presidentials. Snow buries the leaves and the gusts hit hard.',
     wind:1.45,gustEvery:[7,12],snow:true,
     leafWeights:[0.05,0.1,0.2,0.3,0.25,0.1],
     tree:['#b9701f','#c98a1f','#d9a531','#e2b844','#cf7a26'],treeDark:'#8a5a17',
-    finds:[{id:'boot',e:'🥾',name:'Hiking boot'},{id:'scarf',e:'🧣',name:'Striped scarf'},{id:'map',e:'🗺️',name:'Presidential Range trail map'},
-      {id:'nhq',e:'🪙',name:'2000 New Hampshire quarter'},{id:'cup',e:'☕',name:'Thermos cup'}]}
+    facts:['Mount Washington, the highest peak in the Northeast at 6,288 feet, stands just north of Jackson.',
+      'In 1934 its summit observatory measured a 231 mph gust, a world record that stood for 62 years.',
+      'Birches and beeches turn yellow when chlorophyll breaks down and reveals carotenoids that were in the leaf all summer.'],
+    finds:[{id:'boot',e:'🥾',name:'Hiking boot',fact:'The Appalachian Trail crosses the Presidential Range above treeline.'},
+      {id:'scarf',e:'🧣',name:'Striped scarf',fact:'Snow has fallen on Mount Washington in every month of the year.'},
+      {id:'map',e:'🗺️',name:'Presidential Range trail map',fact:'The range’s peaks are named for presidents: Washington, Adams, Jefferson, Madison, Monroe and more.'},
+      {id:'nhq',e:'🪙',name:'2000 New Hampshire quarter',fact:'It shows the Old Man of the Mountain, a granite profile that collapsed in 2003.'},
+      {id:'cup',e:'☕',name:'Thermos cup',fact:'The Mount Washington Observatory has kept weather records on the summit since 1932.'}]}
 };
+const PLACES=[
+  {id:'vt'},{id:'nh'},
+  {id:'me',town:'Bar Harbor',state:'Maine',soon:'Fog rolls in off Frenchman Bay, gulls raid the tarp, and a lighthouse beam sweeps the lawn.',
+    facts:['For much of fall and winter, Cadillac Mountain in Acadia National Park is the first place in the US to see the sunrise.']},
+  {id:'ma',town:'Salem',state:'Massachusetts',soon:'October in the Witch City, with trick-or-treaters who can’t resist a leaf pile.',
+    facts:['Salem’s Haunted Happenings festival runs through the whole month of October.']}
+].map(p=>LEVELS[p.id]?{...LEVELS[p.id],level:true}:p);
 
-// Saved per viewer: best score and stars per lawn, and the finds album.
-let store={best:{},finds:{}};
-try{const s=JSON.parse(localStorage.getItem('rake-before-dark:v1')); if(s&&s.best&&s.finds) store=s;}catch(_){}
-function save(){try{localStorage.setItem('rake-before-dark:v1',JSON.stringify(store));}catch(_){}}
+// Saved per viewer: options, best score and stars per lawn and difficulty, the finds album, and an interrupted round.
+const KEY='rake-before-dark:v1', ROUND_KEY='rake-before-dark:round';
+let store={best:{},finds:{},opts:{diff:'standard',muted:false,last:'vt'}};
+try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.best&&s.finds) store={best:s.best,finds:s.finds,opts:{...store.opts,...(s.opts||{})}};}catch(_){}
+for(const id of Object.keys(LEVELS)) if(store.best[id]){if(!store.best[id+':standard']) store.best[id+':standard']=store.best[id]; delete store.best[id];}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(_){}}
+function loadRound(){try{return JSON.parse(localStorage.getItem(ROUND_KEY));}catch(_){return null;}}
+function clearRound(){try{localStorage.removeItem(ROUND_KEY);}catch(_){}}
 
 // Sunset and civil dusk from the standard sunrise equation (about a minute of error).
 function sunTimes(now,lat,lon){
@@ -167,15 +305,16 @@ function sunTimes(now,lat,lon){
   return {sunset:at(-0.833),dusk:at(-6)};
 }
 
-let LV=LEVELS.vt, selected='vt';
-let W=0,H=0,DPR=1,K=1,SAFE_B=0;
-let tarp={x:0,y:0,w:0,h:0}, bag={x:0,y:0}, tree={x:0,y:0,r:0}, blobs=[];
-let leaves=[], state='intro', elapsed=0, bagged=0, fell=0, N0=300, spawnAcc=0, groundLeft=0;
+let selected=LEVELS[store.opts.last]?store.opts.last:'vt', mapSel=selected;
+let LV=LEVELS[selected], D=DIFFS[store.opts.diff]||DIFFS.standard;
+let W=0,H=0,DPR=1,K=1,SAFE_B=0,MINX=0,MAXX=0,MINY=0,MAXY=0;
+let tarp={x:0,y:0,w:0,h:0}, tp={x:0,y:0,w:0,h:0}, tarpScale=1, bag={x:0,y:0}, tree={x:0,y:0,r:0}, blobs=[];
+let leaves=[], state='title', elapsed=0, playT=0, bagged=0, fell=0, N0=300, spawnAcc=0, groundLeft=0;
 let score=0, pileBonus=0, dayBonus=0, findBonus=0, bestPile=0, dump={n:0,last:0}, endedEarly=false, endClock=0;
-let items=[], popups=[], flakes=[];
+let items=[], popups=[], flakes=[], pickups=[], active={}, nextPower=10;
 let sun, T0, T1, pSun=0.6, LKEYS=[];
 let gust=null, nextGust=13, env=0, wx=0, wy=0, streaks=[], snowAmt=0;
-let drag=false, pid=null, showRake=false, rx=0, ry=0, px=0, py=0, rdx=0, rdy=-1, rakeSpeed=0, carried=0;
+let drag=false, pid=null, showRake=false, rx=0, ry=0, px=0, py=0, rdx=0, rdy=-1, rakeSpeed=0, carried=0, lastCarried=0;
 let grid=new Uint16Array(1), gw=1;
 const CELL=32;
 
@@ -207,16 +346,18 @@ const SPRITES=[];
 function pickSprite(){
   let r=Math.random(), i=0;
   while(i<LV.leafWeights.length-1&&(r-=LV.leafWeights[i])>0) i++;
-  return SPRITES[i*4+((Math.random()*4)|0)];
+  return i*4+((Math.random()*4)|0);
 }
 
-function newLeaf(x,y,falling){
-  return {x,y,vx:0,vy:0,a:Math.random()*6.283,va:0,s:pickSprite(),st:falling?1:0,z:falling?1:0,ph:Math.random()*6.283,
-    rest:0,restT:0.25+Math.random()*0.4,bt:0,lift:0.6+Math.random()*0.8,b:0};
+function newLeaf(x,y,falling,si){
+  si=si??pickSprite();
+  return {x,y,vx:0,vy:0,a:Math.random()*6.283,va:0,si,s:SPRITES[si],st:falling?1:0,z:falling?1:0,ph:Math.random()*6.283,
+    rest:0,restT:0.25+Math.random()*0.4,bt:0,lift:0.6+Math.random()*0.8,b:0,d:Math.random()};
 }
-const inTarp=(x,y,m)=>x>tarp.x-m&&x<tarp.x+tarp.w+m&&y>tarp.y-m&&y<tarp.y+tarp.h+m;
+const inTarp=(x,y,m)=>x>tp.x-m&&x<tp.x+tp.w+m&&y>tp.y-m&&y<tp.y+tp.h+m;
 const inCanopy=(x,y)=>Math.hypot(x-tree.x,y-tree.y)<tree.r*0.95;
 function popup(text,x,y,big){popups.push({text,x,y,t:0,big:!!big});}
+const rakeHalf=()=>34*K*(active.R?1.9:1)*(active.P?0.55:1);
 
 function makeBlobs(){
   blobs=[];
@@ -226,6 +367,13 @@ function makeBlobs(){
   }
 }
 
+function placeTarp(){
+  const cx=tarp.x+tarp.w/2, bottom=tarp.y+tarp.h;
+  let w=tarp.w*tarpScale, h=tarp.h*tarpScale;
+  w=Math.min(w,W-EDGE); h=Math.min(h,bottom-MINY);
+  tp={w,h,x:clamp(cx-w/2,EDGE/2,W-EDGE/2-w),y:bottom-h};
+}
+
 function layout(){
   DPR=Math.min(window.devicePixelRatio||1,2);
   W=innerWidth; H=innerHeight;
@@ -233,14 +381,17 @@ function layout(){
   const m=Math.min(W,H);
   K=clamp(m/520,0.8,1.35);
   SAFE_B=$('safe').offsetHeight;
+  // Keep leaves out of the strips where phones take edge swipes as back or home gestures, and out from under the HUD.
+  MINX=EDGE; MAXX=W-EDGE; MINY=Math.max(56,$('hud').getBoundingClientRect().bottom-14); MAXY=H-SAFE_B-20;
   const tw=clamp(W*0.42,160,300), th=tw*0.52;
   tarp={w:tw,h:th,x:(W-tw)/2-18*K,y:H-th-SAFE_B-24};
+  placeTarp();
   bag={x:tarp.x+tarp.w+30*K,y:tarp.y+tarp.h*0.55};
   tree={x:-m*0.06,y:-m*0.04,r:m*0.32};
   makeBlobs();
   paintGrass();
   scrape.width=snow.width=cv.width; scrape.height=snow.height=cv.height;
-  for(const l of leaves){l.x=clamp(l.x,4,W-4); l.y=clamp(l.y,4,H-4);}
+  for(const l of leaves){l.x=clamp(l.x,MINX,MAXX); l.y=clamp(l.y,MINY,MAXY);}
   gw=Math.ceil(W/CELL)+1;
   grid=new Uint16Array(gw*(Math.ceil(H/CELL)+1));
   streaks=Array.from({length:36},()=>({x:Math.random()*W,y:Math.random()*H,len:30+Math.random()*70}));
@@ -267,30 +418,32 @@ function paintGrass(){
 
 function lawnSpot(margin){
   for(let i=0;i<500;i++){
-    const x=margin+Math.random()*(W-2*margin), y=70+Math.random()*(H-SAFE_B-90);
+    const x=MINX+margin+Math.random()*(MAXX-MINX-2*margin), y=MINY+margin+Math.random()*(MAXY-MINY-2*margin);
     if(!inTarp(x,y,30)&&!inCanopy(x,y)&&Math.hypot(x-bag.x,y-bag.y)>40) return [x,y];
   }
   return [W/2,H/2];
 }
 
 function reset(){
-  LV=LEVELS[selected];
+  LV=LEVELS[selected]; D=DIFFS[store.opts.diff]||DIFFS.standard;
   makeBlobs();
   sun=sunTimes(new Date(),LV.lat,LV.lon);
   T1=sun.dusk; T0=sun.sunset-LEAD_MIN*6e4; pSun=(sun.sunset-T0)/(T1-T0);
   LKEYS=LV.snow
     ?[[0,[226,226,236],0.3],[pSun,[196,188,210],0.45],[pSun+(1-pSun)*0.45,[125,122,165],0.6],[1,[36,40,82],0.82]]
     :[[0,[255,224,170],0.22],[pSun*0.8,[255,190,120],0.32],[pSun,[240,130,90],0.45],[pSun+(1-pSun)*0.45,[130,100,175],0.58],[1,[40,42,95],0.8]];
-  leaves=[]; bagged=0; fell=0; elapsed=0; spawnAcc=0; snowAmt=0;
+  leaves=[]; bagged=0; fell=0; elapsed=0; playT=0; spawnAcc=0; snowAmt=0;
   score=pileBonus=dayBonus=findBonus=bestPile=0; dump={n:0,last:0}; endedEarly=false; popups=[];
-  gust=null; nextGust=LV.gustEvery[0]+3; env=0; wx=wy=0; drag=false;
+  pickups=[]; active={}; nextPower=10; tarpScale=1; placeTarp();
+  $('chips').innerHTML=''; chipKey='';
+  gust=null; nextGust=LV.gustEvery[0]+3; env=0; wx=wy=0; drag=false; lastCarried=0;
   N0=Math.round(clamp(W*H/1100,220,650));
   let guard=0;
   while(leaves.length<N0&&guard++<20000){
     let x,y;
     if(Math.random()<0.6){x=tree.x+tree.r*1.1+gauss()*W*0.25; y=tree.y+tree.r*1.0+gauss()*H*0.22;}
     else{x=Math.random()*W; y=Math.random()*H;}
-    if(x<8||x>W-8||y<60||y>H-SAFE_B-8||inTarp(x,y,16)||inCanopy(x,y)) continue;
+    if(x<MINX||x>MAXX||y<MINY+4||y>MAXY||inTarp(x,y,16)||inCanopy(x,y)) continue;
     leaves.push(newLeaf(x,y,false));
   }
   // Three finds per round, unfound ones first, each buried under its own little pile.
@@ -298,13 +451,39 @@ function reset(){
   const pool=[...LV.finds].sort(()=>Math.random()-0.5).sort((a,b)=>got.has(a.id)-got.has(b.id));
   items=pool.slice(0,3).map(f=>{
     const [x,y]=lawnSpot(30);
-    for(let i=0;i<16;i++) leaves.push(newLeaf(x+gauss()*7*K,y+gauss()*7*K,false));
+    for(let i=0;i<16;i++) leaves.push(newLeaf(clamp(x+gauss()*7*K,MINX,MAXX),clamp(y+gauss()*7*K,MINY,MAXY),false));
     return {...f,x,y,found:false,clearT:0,raked:false,ft:0};
   });
   N0=leaves.length;
   for(const c of [sctx,nctx]){c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,scrape.width,scrape.height);}
   $('sunlabel').textContent=`Sunset ${fmtShort(sun.sunset)} · Dusk ${fmtShort(sun.dusk)}`;
   $('sunmark').style.left=(pSun*100)+'%';
+}
+
+function snapshot(){
+  flushDump();
+  const pending=leaves.filter(l=>l.st===2).length;
+  return {lvl:LV.id,diff:store.opts.diff,W,H,elapsed,playT,bagged:bagged+pending,fell,score,pileBonus,findBonus,bestPile,spawnAcc,
+    nextGust:nextGust-playT,nextPower:nextPower-playT,clock:T0+(T1-T0)*Math.min(elapsed/D.secs,1),
+    items:items.map(({id,x,y,found,raked})=>({id,x,y,found,raked})),
+    leaves:leaves.filter(l=>l.st!==2).map(l=>[Math.round(l.x),Math.round(l.y),+l.a.toFixed(2),l.si,l.st,+l.z.toFixed(2),+l.b.toFixed(2)])};
+}
+function saveRound(){
+  if(state!=='play'&&state!=='paused') return;
+  try{localStorage.setItem(ROUND_KEY,JSON.stringify(snapshot()));}catch(_){}
+}
+function restoreRound(s){
+  selected=s.lvl; store.opts.diff=s.diff; reset();
+  const sx=W/s.W, sy=H/s.H;
+  leaves=s.leaves.map(([x,y,a,si,st,z,b])=>{const l=newLeaf(clamp(x*sx,MINX,MAXX),clamp(y*sy,MINY,MAXY),st===1,si); l.a=a; l.z=z; l.b=b; return l;});
+  items=s.items.map(it=>({...LV.finds.find(f=>f.id===it.id),x:it.x*sx,y:it.y*sy,found:it.found,raked:it.raked,clearT:0,ft:9}));
+  ({elapsed,playT,bagged,fell,score,pileBonus,findBonus,bestPile,spawnAcc}=s);
+  nextGust=playT+s.nextGust; nextPower=playT+s.nextPower;
+  N0=leaves.length+bagged;
+  if(LV.snow){
+    snowAmt=smooth((elapsed/D.secs-0.15)/0.45);
+    nctx.setTransform(1,0,0,1,0,0); nctx.fillStyle=`rgba(244,247,255,${0.8*snowAmt})`; nctx.fillRect(0,0,snow.width,snow.height);
+  }
 }
 
 function scrapeStroke(x0,y0,x1,y1,dx,dy,half){
@@ -330,30 +509,48 @@ function flushDump(){
   const mult=n>=Math.round(60*K)?5:n>=Math.round(35*K)?3:n>=Math.round(15*K)?2:1;
   const base=n*LEAF_PTS, bonus=base*(mult-1);
   score+=base+bonus; pileBonus+=bonus; bestPile=Math.max(bestPile,n);
-  if(mult>1) popup(`${mult===5?'Monster pile':mult===3?'Big pile':'Nice pile'}  ${n} × ${mult}`,tarp.x+tarp.w/2,tarp.y-10,true);
+  if(mult>1) popup(`${mult===5?'Monster pile':mult===3?'Big pile':'Nice pile'}  ${n} × ${mult}`,tp.x+tp.w/2,tp.y-10,true);
+}
+
+function spawnPickup(){
+  const k=Math.random()<0.22*D.pine?'P':'TRS'[(Math.random()*3)|0];
+  const [x,y]=lawnSpot(40);
+  pickups.push({k,x,y,z:1,life:8,got:false});
+}
+function activate(u){
+  u.got=true;
+  const pw=POWERS[u.k];
+  active[u.k]=pw.dur;
+  popup(pw.good?`${pw.name}!`:`${pw.name}: rake shrinks`,u.x,u.y-18*K,pw.good);
+  chime(pw.good);
 }
 
 function update(dt){
-  elapsed+=dt;
-  const p=Math.min(elapsed/GAME_SECONDS,1);
+  playT+=dt;
+  for(const k in active){active[k]-=dt; if(active[k]<=0) delete active[k];}
+  if(!active.S) elapsed+=dt;
+  const p=Math.min(elapsed/D.secs,1);
+  tarpScale+=((active.T?2.2:1)-tarpScale)*Math.min(1,dt*6);
+  placeTarp();
 
-  spawnAcc+=dt*(N0/300)*(0.3+0.9*p);
-  while(spawnAcc>=1){
-    spawnAcc--;
-    const a=Math.random()*Math.PI/2, rr=tree.r*(0.85+Math.random()*1.1);
-    leaves.push(newLeaf(tree.x+Math.cos(a)*rr,tree.y+Math.sin(a)*rr,true));
-    fell++;
+  // Leaves fall through most of the round, then stop so the last stretch can be cleaned up.
+  if(p<0.8){
+    spawnAcc+=dt*(N0/300)*(0.3+0.9*p)*D.fall;
+    while(spawnAcc>=1){
+      spawnAcc--;
+      const a=Math.random()*Math.PI/2, rr=tree.r*(0.85+Math.random()*1.1);
+      leaves.push(newLeaf(clamp(tree.x+Math.cos(a)*rr,MINX,MAXX),clamp(tree.y+Math.sin(a)*rr,MINY,MAXY),true));
+      fell++;
+    }
   }
 
-  let banner='';
-  if(!gust&&elapsed>=nextGust-1.6) banner='Gust incoming';
-  else if(LV.snow&&p>0.12&&p<0.2) banner='Snow moving in';
-  $('banner').hidden=!banner;
-  if(banner) $('banner').textContent=banner;
+  if(playT>=nextPower){spawnPickup(); nextPower=playT+(14+Math.random()*8)/D.power;}
+  for(const u of pickups){if(u.z>0) u.z=Math.max(0,u.z-dt/1.2); else u.life-=dt;}
+  pickups=pickups.filter(u=>u.life>0&&!u.got);
 
-  if(!gust&&elapsed>=nextGust){
+  if(!gust&&playT>=nextGust){
     const ang=Math.random()*Math.PI*2;
-    gust={t:0,dur:3.2,dx:Math.cos(ang),dy:Math.sin(ang),str:(700+Math.random()*400)*K*LV.wind};
+    gust={t:0,dur:3.2,dx:Math.cos(ang),dy:Math.sin(ang),str:(700+Math.random()*400)*K*LV.wind*D.wind};
   }
   env=0; wx=wy=0;
   if(gust){
@@ -365,7 +562,7 @@ function update(dt){
       if(s.x<-120)s.x+=W+240; else if(s.x>W+120)s.x-=W+240;
       if(s.y<-120)s.y+=H+240; else if(s.y>H+120)s.y-=H+240;
     }
-    if(gust.t>=gust.dur){gust=null; nextGust=elapsed+LV.gustEvery[0]+Math.random()*(LV.gustEvery[1]-LV.gustEvery[0]);}
+    if(gust.t>=gust.dur){gust=null; nextGust=playT+(LV.gustEvery[0]+Math.random()*(LV.gustEvery[1]-LV.gustEvery[0]))*D.gustGap;}
   }
 
   // Snow settles as speckles on its own layer; the rake scrapes paths through it.
@@ -380,7 +577,7 @@ function update(dt){
       nctx.fill();
     }
     for(const f of flakes){
-      f.y+=(f.v*K+wy*0.35)*dt; f.x+=(Math.sin(elapsed*1.3+f.ph)*14+wx*0.35)*dt;
+      f.y+=(f.v*K+wy*0.35)*dt; f.x+=(Math.sin(playT*1.3+f.ph)*14+wx*0.35)*dt;
       if(f.y>H+5)f.y-=H+10; else if(f.y<-5)f.y+=H+10;
       if(f.x>W+5)f.x-=W+10; else if(f.x<-5)f.x+=W+10;
     }
@@ -389,7 +586,8 @@ function update(dt){
   grid.fill(0);
   for(const l of leaves) if(l.st===0) grid[(l.y/CELL|0)*gw+(l.x/CELL|0)]++;
 
-  // The rake carries leaves in a box just ahead of its head; past capacity they spill out the sides. Snow-wet leaves carry worse.
+  // The rake pushes every leaf in a box ahead of its head into a band at the tines; the band deepens as the
+  // load grows, so a big pile rides along instead of spraying out. Snow-buried leaves first need a pass to break loose.
   carried=0; rakeSpeed*=Math.exp(-10*dt);
   if(drag){
     const sx=rx-px, sy=ry-py, len=Math.hypot(sx,sy);
@@ -401,43 +599,38 @@ function update(dt){
       const sp=Math.hypot(vx,vy);
       if(sp>2200){vx*=2200/sp; vy*=2200/sp;}
       rakeSpeed=Math.min(sp,2200);
-      const HALF=34*K, CAP=Math.round(70*K*(1-0.35*snowAmt));
+      const HALF=rakeHalf(), lc=Math.min(lastCarried,160), front=(12+lc*0.25)*K;
       for(const l of leaves){
         if(l.st!==0) continue;
         const lx=l.x-rx, ly=l.y-ry, along=lx*dx+ly*dy;
-        if(along>12*K||along<-len-8) continue;
+        if(along>front||along<-len-8) continue;
         const across=-lx*dy+ly*dx;
         if(Math.abs(across)>HALF) continue;
-        if(carried<CAP){
-          carried++;
-          const tgt=(3+Math.random()*9)*K;
-          if(along<tgt){l.x+=dx*(tgt-along); l.y+=dy*(tgt-along);}
-          l.vx=vx*0.6; l.vy=vy*0.6; l.va+=(Math.random()-0.5)*6; l.b=0;
-        }else{
-          const side=across>=0?1:-1;
-          l.vx+=-dy*side*240; l.vy+=dx*side*240;
-        }
+        if(l.b>0.5){l.b=0; l.vx=vx*0.12; l.vy=vy*0.12; continue;}
+        carried++;
+        const tgt=(3+l.d*(9+lc*0.22))*K;
+        if(along<tgt){l.x+=dx*(tgt-along); l.y+=dy*(tgt-along);}
+        l.vx=vx*0.45; l.vy=vy*0.45; l.va+=(Math.random()-0.5)*4; l.b=0;
       }
-      for(const it of items){
-        if(it.raked) continue;
-        const lx=it.x-rx, ly=it.y-ry, along=lx*dx+ly*dy;
-        if(along<=14*K&&along>=-len-10&&Math.abs(-lx*dy+ly*dx)<=HALF) it.raked=true;
-      }
+      lastCarried=carried;
+      const inBox=(x,y,pad)=>{const lx=x-rx, ly=y-ry, al=lx*dx+ly*dy; return al<=14*K+pad&&al>=-len-10-pad&&Math.abs(-lx*dy+ly*dx)<=HALF+pad;};
+      for(const it of items) if(!it.raked&&inBox(it.x,it.y,0)) it.raked=true;
+      for(const u of pickups) if(u.z<=0&&!u.got&&inBox(u.x,u.y,8*K)) activate(u);
       scrapeStroke(px,py,rx,ry,dx,dy,HALF);
     }
     px=rx; py=ry;
   }
 
-  const damp=Math.exp(-9*dt), spin=Math.exp(-4*dt), bx=bag.x, by=bag.y-14*K, bury=0.045*snowAmt*dt;
+  const spin=Math.exp(-4*dt), bx=bag.x, by=bag.y-14*K, bury=0.045*snowAmt*dt;
   groundLeft=0;
   for(let i=leaves.length-1;i>=0;i--){
     const l=leaves[i];
     if(l.st===1){
       l.z-=dt*0.55;
-      l.x+=(Math.sin(elapsed*2.2+l.ph)*40*K+18*K+wx*0.25)*dt;
+      l.x+=(Math.sin(playT*2.2+l.ph)*40*K+18*K+wx*0.25)*dt;
       l.y+=(26*K+wy*0.25)*dt;
-      l.a+=dt*2*Math.sin(l.ph+elapsed);
-      l.x=clamp(l.x,4,W-4); l.y=clamp(l.y,4,H-4);
+      l.a+=dt*2*Math.sin(l.ph+playT);
+      l.x=clamp(l.x,MINX,MAXX); l.y=clamp(l.y,MINY,MAXY);
       if(l.z<=0){l.z=0; l.st=0;}
       continue;
     }
@@ -448,20 +641,22 @@ function update(dt){
       if(l.bt>=1){bagged++; leaves[i]=leaves[leaves.length-1]; leaves.pop();}
       continue;
     }
-    const sh=1/(1+grid[(l.y/CELL|0)*gw+(l.x/CELL|0)]/4), lift=l.lift*(1-0.6*l.b);
+    // Leaves in a dense pile shelter each other from wind and drag on each other, so piles settle fast.
+    const n=grid[(l.y/CELL|0)*gw+(l.x/CELL|0)], sh=1/(1+n/4), lift=l.lift*(1-0.6*l.b);
     l.vx+=wx*sh*lift*dt; l.vy+=wy*sh*lift*dt;
     if(env>0) l.va+=(Math.random()-0.5)*env*sh*40*dt;
+    const damp=Math.exp(-(9+Math.min(n,20)*0.5)*dt);
     l.vx*=damp; l.vy*=damp; l.va*=spin;
     l.x+=l.vx*dt; l.y+=l.vy*dt; l.a+=l.va*dt;
-    if(l.x<4){l.x=4; l.vx=Math.abs(l.vx)*0.4;} else if(l.x>W-4){l.x=W-4; l.vx=-Math.abs(l.vx)*0.4;}
-    if(l.y<4){l.y=4; l.vy=Math.abs(l.vy)*0.4;} else if(l.y>H-4){l.y=H-4; l.vy=-Math.abs(l.vy)*0.4;}
+    if(l.x<MINX){l.x=MINX; l.vx=Math.abs(l.vx)*0.4;} else if(l.x>MAXX){l.x=MAXX; l.vx=-Math.abs(l.vx)*0.4;}
+    if(l.y<MINY){l.y=MINY; l.vy=Math.abs(l.vy)*0.4;} else if(l.y>MAXY){l.y=MAXY; l.vy=-Math.abs(l.vy)*0.4;}
     if(bury>0) l.b=Math.min(1,l.b+bury);
     if(inTarp(l.x,l.y,-4)){
       if(Math.hypot(l.vx,l.vy)<35) l.rest+=dt; else l.rest=0;
-      if(l.rest>l.restT){l.st=2; l.bt=0; dump.n++; dump.last=elapsed;}
+      if(l.rest>l.restT){l.st=2; l.bt=0; dump.n++; dump.last=playT;}
     }else{l.rest=0; groundLeft++;}
   }
-  if(dump.n&&elapsed-dump.last>0.5) flushDump();
+  if(dump.n&&playT-dump.last>0.5) flushDump();
 
   // A find counts once no leaves cover it (and, in snow, once the rake has scraped over it).
   const fr=15*K;
@@ -486,9 +681,22 @@ function update(dt){
   sctx.fillStyle='rgba(0,0,0,0.02)';
   sctx.fillRect(0,0,scrape.width,scrape.height);
 
+  updateChips(p);
   audioTick();
-  if(elapsed>8&&groundLeft<=Math.max(3,Math.round(N0*0.01))) finish(true);
-  else if(elapsed>=GAME_SECONDS) finish(false);
+  if(playT>8&&groundLeft<=Math.max(4,Math.round(N0*0.02))) finish(true);
+  else if(elapsed>=D.secs) finish(false);
+}
+
+let chipKey='';
+function updateChips(p){
+  const list=[];
+  if(!gust&&playT>=nextGust-1.6) list.push(['','Gust incoming']);
+  else if(LV.snow&&p>0.12&&p<0.2) list.push(['','Snow moving in']);
+  for(const k of 'STRP') if(active[k]) list.push([POWERS[k].good?'good':'bad',`${POWERS[k].name} ${Math.ceil(active[k])}`]);
+  const key=list.map(c=>c.join(':')).join('|');
+  if(key===chipKey) return;
+  chipKey=key;
+  $('chips').innerHTML=list.map(([c,t])=>`<span class="chip ${c}">${t}</span>`).join('');
 }
 
 function drawLeaf(l,sc){
@@ -500,12 +708,12 @@ function drawLeaf(l,sc){
 }
 
 function drawTarp(){
-  const {x,y,w,h}=tarp;
+  const {x,y,w,h}=tp;
   ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.fillRect(x+4,y+5,w,h);
-  ctx.fillStyle='#2f62a3'; ctx.fillRect(x,y,w,h);
+  ctx.fillStyle=active.T?'#3b74bd':'#2f62a3'; ctx.fillRect(x,y,w,h);
   ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(x+w*0.33,y); ctx.lineTo(x+w*0.36,y+h); ctx.moveTo(x+w*0.68,y); ctx.lineTo(x+w*0.66,y+h); ctx.moveTo(x,y+h*0.5); ctx.lineTo(x+w,y+h*0.48); ctx.stroke();
-  ctx.strokeStyle='#5d8fd0'; ctx.lineWidth=2; ctx.strokeRect(x+1,y+1,w-2,h-2);
+  ctx.strokeStyle=active.T?'#ffd27a':'#5d8fd0'; ctx.lineWidth=2; ctx.strokeRect(x+1,y+1,w-2,h-2);
   ctx.fillStyle='#d8dde4';
   for(const [gx,gy] of [[x+6,y+6],[x+w-6,y+6],[x+6,y+h-6],[x+w-6,y+h-6]]){ctx.beginPath(); ctx.arc(gx,gy,2.2,0,6.283); ctx.fill();}
 }
@@ -533,6 +741,30 @@ function drawItems(){
     if(it.found){ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(it.x,it.y,(14+t*30)*K,0,6.283); ctx.stroke();}
   }
   ctx.globalAlpha=1;
+}
+
+function drawPickups(){
+  for(const u of pickups){
+    const s=K*(1+u.z*1.3);
+    if(u.z>0){ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(u.x+u.z*20*K,u.y+u.z*30*K,8*K,5*K,0,0,6.283); ctx.fill();}
+    ctx.save();
+    ctx.globalAlpha=u.life<2.5&&!reduceMotion?(Math.sin(playT*14)>0?1:0.35):1;
+    ctx.translate(u.x,u.y-u.z*24*K); ctx.scale(s,s);
+    if(u.k==='P'){
+      ctx.fillStyle='#6e4a2c'; ctx.beginPath(); ctx.ellipse(0,0,8,13,0.3,0,6.283); ctx.fill();
+      ctx.strokeStyle='#3f2a17'; ctx.lineWidth=1.3; ctx.beginPath();
+      for(let r=-9;r<=9;r+=4.5){ctx.moveTo(-7,r+2); ctx.quadraticCurveTo(0,r-2,7,r+2);}
+      ctx.stroke();
+    }else{
+      ctx.fillStyle=`rgba(255,210,122,${0.25+0.15*Math.sin(playT*5)})`; ctx.beginPath(); ctx.arc(0,1,19,0,6.283); ctx.fill();
+      ctx.fillStyle='#c98a45'; ctx.beginPath(); ctx.ellipse(0,4,9,11,0,0,6.283); ctx.fill();
+      ctx.fillStyle='#6b4423'; ctx.beginPath(); ctx.ellipse(0,-5,11.5,6.5,0,0,6.283); ctx.fill();
+      ctx.fillRect(-1.2,-15,2.4,5);
+      ctx.fillStyle='#2a1405'; ctx.font='700 11px Karla, system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(u.k,0,6);
+    }
+    ctx.restore();
+  }
 }
 
 function drawShadow(p){
@@ -570,16 +802,16 @@ function drawFlakes(){
 
 function drawRake(){
   if(state!=='play'||!showRake) return;
-  const HALF=34*K, dx=rdx, dy=rdy, nx=-dy, ny=dx, hl=120*K;
+  const HALF=rakeHalf(), dx=rdx, dy=rdy, nx=-dy, ny=dx, hl=120*K, tines=Math.max(4,Math.round(HALF/5.2));
   ctx.save(); ctx.globalAlpha=drag?1:0.5; ctx.lineCap='round';
   ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=5*K;
   ctx.beginPath(); ctx.moveTo(rx+4,ry+6); ctx.lineTo(rx-dx*hl+4,ry-dy*hl+6); ctx.stroke();
   ctx.strokeStyle='#9a7347'; ctx.lineWidth=4.5*K;
   ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-dx*hl,ry-dy*hl); ctx.stroke();
   ctx.strokeStyle='#d8d2c4'; ctx.lineWidth=1.6*K; ctx.beginPath();
-  for(let k=-6;k<=6;k++){const o=k*HALF/6.5; ctx.moveTo(rx+nx*o,ry+ny*o); ctx.lineTo(rx+nx*o+dx*9*K,ry+ny*o+dy*9*K);}
+  for(let k=-tines;k<=tines;k++){const o=k*HALF/(tines+0.5); ctx.moveTo(rx+nx*o,ry+ny*o); ctx.lineTo(rx+nx*o+dx*9*K,ry+ny*o+dy*9*K);}
   ctx.stroke();
-  ctx.strokeStyle='#5a3d22'; ctx.lineWidth=5*K;
+  ctx.strokeStyle=active.P?'#4a3a22':'#5a3d22'; ctx.lineWidth=5*K;
   ctx.beginPath(); ctx.moveTo(rx+nx*HALF,ry+ny*HALF); ctx.lineTo(rx-nx*HALF,ry-ny*HALF); ctx.stroke();
   ctx.restore();
 }
@@ -623,7 +855,7 @@ function drawPopups(){
     const t=pp.t/1.8, y=pp.y-t*40*K;
     ctx.globalAlpha=1-smooth((t-0.6)/0.4);
     ctx.font=`700 ${(pp.big?19:15)*K}px Karla, system-ui, sans-serif`;
-    const x=clamp(pp.x,ctx.measureText(pp.text).width/2+12,W-ctx.measureText(pp.text).width/2-12);
+    const hw=ctx.measureText(pp.text).width/2, x=clamp(pp.x,hw+12,W-hw-12);
     ctx.strokeStyle='rgba(28,21,48,0.9)'; ctx.lineWidth=4; ctx.strokeText(pp.text,x,y);
     ctx.fillStyle=pp.big?'#ffd27a':'#fbf1e1'; ctx.fillText(pp.text,x,y);
   }
@@ -631,7 +863,7 @@ function drawPopups(){
 }
 
 function draw(){
-  const p=Math.min(elapsed/GAME_SECONDS,1);
+  const p=Math.min(elapsed/D.secs,1);
   ctx.setTransform(1,0,0,1,0,0);
   ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
   ctx.drawImage(grass,0,0); ctx.drawImage(scrape,0,0);
@@ -646,7 +878,7 @@ function draw(){
   for(const l of leaves) if(l.st===1){ctx.beginPath(); ctx.ellipse(l.x+l.z*26*K,l.y+l.z*34*K,5*K,3*K,0,0,6.283); ctx.fill();}
   for(const l of leaves) if(l.st===1) drawLeaf(l,1+l.z*0.9);
   ctx.globalAlpha=1; ctx.setTransform(DPR,0,0,DPR,0,0);
-  drawCanopy(); drawFlakes(); drawRake(); drawWind(); drawLight(p); drawPopups();
+  drawPickups(); drawCanopy(); drawFlakes(); drawRake(); drawWind(); drawLight(p); drawPopups();
 
   $('clock').textContent=fmtTime.format(state==='over'?endClock:T0+(T1-T0)*p);
   $('sunfill').style.width=(p*100)+'%';
@@ -654,12 +886,14 @@ function draw(){
   $('clear').textContent=`${Math.round(100*bagged/Math.max(1,bagged+leaves.length))}% clear`;
 }
 
-function starsFor(pct,early){return early||pct>=97?3:pct>=85?2:pct>=60?1:0;}
+function starsFor(pct,early){return early||pct>=90?3:pct>=75?2:pct>=50?1:0;}
 const starText=n=>'★'.repeat(n)+`<span class="off">${'★'.repeat(3-n)}</span>`;
+const bestKey=()=>`${LV.id}:${store.opts.diff}`;
 
 function finish(early){
-  endedEarly=early; state='over'; drag=false; showRake=false; $('banner').hidden=true;
-  endClock=T0+(T1-T0)*Math.min(elapsed/GAME_SECONDS,1);
+  endedEarly=early; state='over'; drag=false; showRake=false; active={}; $('chips').innerHTML=''; chipKey='';
+  clearRound(); leaveTrap();
+  endClock=T0+(T1-T0)*Math.min(elapsed/D.secs,1);
   // Leaves already on the tarp go in the bag.
   for(const l of leaves) if(l.st===2||(l.st===0&&inTarp(l.x,l.y,-4))){if(l.st===0) dump.n++; l.done=true;}
   bagged+=leaves.filter(l=>l.done).length;
@@ -667,14 +901,14 @@ function finish(early){
   flushDump();
   const left=leaves.length, pct=Math.round(100*bagged/Math.max(1,bagged+left));
   const minsLeft=Math.round((T1-endClock)/6e4);
-  if(early){dayBonus=Math.round((GAME_SECONDS-elapsed)*DAYLIGHT_PTS); score+=dayBonus;}
+  if(early){dayBonus=Math.round((D.secs-elapsed)*DAYLIGHT_PTS); score+=dayBonus;}
   const stars=starsFor(pct,early);
-  const prev=store.best[LV.id], isBest=!prev||score>prev.score;
-  if(isBest){store.best[LV.id]={score,stars:Math.max(stars,prev?prev.stars:0)}; save();}
+  const prev=store.best[bestKey()], isBest=!prev||score>prev.score;
+  if(isBest){store.best[bestKey()]={score,stars:Math.max(stars,prev?prev.stars:0)}; save();}
   else if(stars>prev.stars){prev.stars=stars; save();}
 
   $('verdict').innerHTML=(early?'Lawn clear':pct>=90?'Clean lawn':pct>=70?'Good enough for October':pct>=40?'Half a lawn':'There’s always tomorrow')+(isBest&&score>0?'<span class="best">New best</span>':'');
-  $('endtime').textContent=early?`${LV.name} · beat the sun by ${minsLeft} min`:`${LV.name} · civil dusk ${fmtTime.format(T1)}`;
+  $('endtime').textContent=early?`${LV.town} · beat the sun by ${minsLeft} min`:`${LV.town} · civil dusk ${fmtTime.format(T1)}`;
   $('stars').innerHTML=starText(stars);
   $('stars').setAttribute('aria-label',`${stars} of 3 stars`);
   $('rScore').textContent=num(score); $('rPct').textContent=pct+'%'; $('rBags').textContent=Math.ceil(bagged/BAG_SIZE);
@@ -685,31 +919,116 @@ function finish(early){
   if(findBonus) rows.push([`Finds (${foundNow.length})`,'+'+num(findBonus)]);
   $('breakdown').innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
   const got=new Set(store.finds[LV.id]||[]);
-  $('rFinds').innerHTML=LV.finds.map(f=>got.has(f.id)?`<span class="find">${f.e} ${f.name}</span>`:`<span class="find missing">? Not found yet</span>`).join('');
-  $('rNote').textContent=`Album: ${got.size} of ${LV.finds.length} found in ${LV.name.split(',')[1].trim()}. ${fell} leaves came down while you worked.`;
+  $('rFinds').innerHTML=LV.finds.map(f=>got.has(f.id)?`<span class="find">${f.e} ${esc(f.name)}</span>`:`<span class="find missing">? Not found yet</span>`).join('');
+  $('rNote').textContent=`${LV.state} album: ${got.size} of ${LV.finds.length} found. ${D.name} difficulty. ${fell} leaves came down while you worked.`;
   audioTick();
-  setTimeout(()=>{$('end').hidden=false; $('again').focus();},700);
+  setTimeout(()=>{if(state==='over'){show('end'); $('again').focus();}},700);
 }
 
-function renderLevels(){
+// ---------- Screens
+const OVERLAYS=['title','mapScreen','options','pause','end'];
+function show(id){for(const o of OVERLAYS) $(o).hidden=o!==id; $('hud').style.visibility=id==='title'||id==='mapScreen'||id==='options'?'hidden':'visible';}
+
+function renderTitle(){
   const now=new Date();
   $('datelabel').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  $('levels').innerHTML=Object.values(LEVELS).map(l=>{
-    const s=sunTimes(now,l.lat,l.lon), b=store.best[l.id], f=(store.finds[l.id]||[]).length;
-    const meta=b?`${'★'.repeat(b.stars)}${'☆'.repeat(3-b.stars)} ${num(b.score)}`:'Not raked yet';
-    return `<button class="lvl" type="button" role="radio" data-id="${l.id}" aria-checked="${l.id===selected}">
-      <strong>${l.name}</strong><span class="meta">${meta}</span>
-      <span class="desc">${l.desc} Sunset ${fmtTime.format(s.sunset)}. Finds ${f}/${l.finds.length}.</span></button>`;
-  }).join('');
-  for(const b of $('levels').querySelectorAll('.lvl')) b.addEventListener('click',()=>{
-    selected=b.dataset.id; renderLevels(); reset();
-    $('levels').querySelector(`[data-id="${selected}"]`).focus();
-  });
+  const r=loadRound();
+  $('contBtn').hidden=!(r&&LEVELS[r.lvl]);
+  if(r&&LEVELS[r.lvl]) $('contInfo').textContent=`${LEVELS[r.lvl].town} · ${fmtTime.format(r.clock)} · ${num(r.score)} pts`;
 }
 
-let ac=null, rustle=null, whoosh=null, muted=false;
+function renderMap(){
+  $('diffTag').textContent=`${DIFFS[store.opts.diff].name} difficulty`;
+  const svg=$('mapSvg');
+  svg.innerHTML=MAP.states.map(s=>`<path class="st" d="${s.d}"/>`).join('')
+    +Object.entries(MAP.labels).map(([k,[x,y]])=>`<text class="lab" x="${k==='NH'?x-6:k==='ME'?x+8:x}" y="${k==='NH'?y+22:y}" text-anchor="middle">${k}</text>`).join('')
+    +PLACES.map(p=>{const [x,y]=MAP.pts[p.id], cls=['dot',p.level?'':'soon',p.id===mapSel?'sel':''].join(' ');
+      return `<g class="${cls}" data-id="${p.id}" tabindex="0" role="button" aria-pressed="${p.id===mapSel}" aria-label="${esc(p.town+', '+p.state+(p.level?'':' (coming soon)'))}" transform="translate(${x} ${y})"><circle class="halo" r="12"/><circle r="5.5"/></g>`;}).join('');
+  for(const g of svg.querySelectorAll('.dot')){
+    const pick=()=>{mapSel=g.dataset.id; if(LEVELS[mapSel]){selected=mapSel; reset();} renderMap(); svg.querySelector(`[data-id="${mapSel}"]`).focus();};
+    g.addEventListener('click',pick);
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); pick();}});
+  }
+  renderPlace();
+}
+
+function renderPlace(){
+  const p=PLACES.find(q=>q.id===mapSel), now=new Date();
+  let h=`<div><p class="eyebrow">${esc(p.state)}</p><h2>${esc(p.town)}</h2></div>`;
+  if(p.level){
+    const s=sunTimes(now,p.lat,p.lon), b=store.best[`${p.id}:${store.opts.diff}`];
+    h+=`<p class="meta">Sunset ${fmtTime.format(s.sunset)} today · ${b?`${'★'.repeat(b.stars)}${'☆'.repeat(3-b.stars)} best ${num(b.score)}`:'Not raked yet'}</p>`;
+    h+=`<p>${esc(p.desc)}</p><div class="actions"><button class="primary" id="playLvl" type="button">Rake this lawn</button></div>`;
+    h+=`<p class="label">About ${esc(p.town)}</p><ul class="facts">${p.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
+    const got=new Set(store.finds[p.id]||[]);
+    h+=`<p class="label">Album · ${got.size} of ${p.finds.length} found</p><ul class="findlist">`
+      +p.finds.map(f=>got.has(f.id)?`<li><span>${f.e}</span><div><strong>${esc(f.name)}</strong><small>${esc(f.fact)}</small></div></li>`
+        :`<li class="missing"><span>?</span><div><strong>Not found yet</strong><small>Hidden somewhere under the leaves.</small></div></li>`).join('')+'</ul>';
+  }else{
+    h+=`<p class="meta">Coming soon</p><p>${esc(p.soon)}</p><p class="label">About ${esc(p.town)}</p><ul class="facts">${p.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
+  }
+  $('place').innerHTML=h;
+  if(p.level) $('playLvl').addEventListener('click',begin);
+}
+
+function renderOptions(){
+  $('diffOpts').innerHTML=Object.entries(DIFFS).map(([k,d])=>`<label><input type="radio" name="diff" id="diff-${k}" value="${k}" ${k===store.opts.diff?'checked':''}><span>${d.name}</span></label>`).join('');
+  for(const r of $('diffOpts').querySelectorAll('input')) r.addEventListener('change',()=>{store.opts.diff=r.value; save(); D=DIFFS[r.value]; $('diffDesc').textContent=D.desc;});
+  $('diffDesc').textContent=DIFFS[store.opts.diff].desc;
+  $('soundOpt').checked=!store.opts.muted;
+  $('resetAsk').hidden=true; $('resetDone').hidden=true; $('resetBtn').hidden=false;
+}
+
+function goTitle(){state='title'; renderTitle(); show('title'); $('playBtn').focus();}
+function goMap(){state='map'; mapSel=selected; reset(); renderMap(); show('mapScreen');}
+
+// A history entry during play turns the phone's back gesture into Pause instead of leaving the page.
+let trapped=false, ignorePop=false;
+function pushTrap(){if(trapped) return; try{history.pushState({rake:1},''); trapped=true;}catch(_){}}
+function leaveTrap(){if(!trapped) return; trapped=false; ignorePop=true; try{history.back();}catch(_){ignorePop=false;}}
+addEventListener('popstate',()=>{
+  if(ignorePop){ignorePop=false; return;}
+  trapped=false;
+  if(state==='play'||state==='paused'){pause(); pushTrap();}
+});
+
+function begin(){
+  initAudio();
+  selected=LEVELS[mapSel]?mapSel:selected; store.opts.last=selected; save();
+  clearRound(); reset(); state='play'; show(null); pushTrap();
+}
+function pause(){
+  if(state!=='play'&&state!=='paused') return;
+  drag=false; pid=null; showRake=false; state='paused';
+  saveRound();
+  $('pauseWhere').textContent=`${LV.town}, ${LV.state} · ${fmtTime.format(T0+(T1-T0)*Math.min(elapsed/D.secs,1))}`;
+  $('soundPause').checked=!store.opts.muted;
+  show('pause'); $('resumeBtn').focus(); audioTick();
+}
+function resume(){initAudio(); state='play'; last=performance.now(); show(null); pushTrap();}
+
+$('playBtn').addEventListener('click',goMap);
+$('optBtn').addEventListener('click',()=>{state='options'; renderOptions(); show('options');});
+$('contBtn').addEventListener('click',()=>{const r=loadRound(); if(!r) return renderTitle(); restoreRound(r); state='paused'; pause(); pushTrap();});
+$('mapBack').addEventListener('click',goTitle);
+$('optBack').addEventListener('click',goTitle);
+$('pauseBtn').addEventListener('click',pause);
+$('resumeBtn').addEventListener('click',resume);
+$('restartBtn').addEventListener('click',()=>{mapSel=selected; begin();});
+$('quitBtn').addEventListener('click',()=>{clearRound(); leaveTrap(); goMap();});
+$('again').addEventListener('click',()=>{mapSel=selected; begin();});
+$('toMap').addEventListener('click',goMap);
+$('resetBtn').addEventListener('click',()=>{$('resetAsk').hidden=false; $('resetBtn').hidden=true; $('resetNo').focus();});
+$('resetNo').addEventListener('click',()=>{$('resetAsk').hidden=true; $('resetBtn').hidden=false;});
+$('resetYes').addEventListener('click',()=>{store.best={}; store.finds={}; save(); clearRound(); $('resetAsk').hidden=true; $('resetDone').hidden=false; $('resetBtn').hidden=false;});
+function setMuted(m){store.opts.muted=m; save(); audioTick();}
+$('soundOpt').addEventListener('change',e=>setMuted(!e.target.checked));
+$('soundPause').addEventListener('change',e=>setMuted(!e.target.checked));
+
+// ---------- Sound
+let ac=null, rustle=null, whoosh=null;
 function initAudio(){
-  if(ac) return;
+  if(ac){if(ac.state==='suspended') ac.resume(); return;}
   try{
     ac=new (window.AudioContext||window.webkitAudioContext)();
     const buf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate), d=buf.getChannelData(0);
@@ -726,15 +1045,26 @@ function initAudio(){
 }
 function audioTick(){
   if(!ac) return;
-  const on=!muted&&state==='play', t=ac.currentTime;
+  const on=!store.opts.muted&&state==='play', t=ac.currentTime;
   rustle.gain.setTargetAtTime(on&&drag?Math.min(rakeSpeed/1600,1)*(carried>0?0.22:0.08):0,t,0.04);
   whoosh.gain.setTargetAtTime(on?env*0.3:0,t,0.15);
 }
+function chime(good){
+  if(!ac||store.opts.muted) return;
+  const t=ac.currentTime, notes=good?[784,1175]:[220,165];
+  notes.forEach((f,i)=>{
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=good?'sine':'triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*0.09); g.gain.linearRampToValueAtTime(0.18,t+i*0.09+0.01); g.gain.exponentialRampToValueAtTime(0.001,t+i*0.09+0.35);
+    o.connect(g).connect(ac.destination); o.start(t+i*0.09); o.stop(t+i*0.09+0.4);
+  });
+}
 
+// ---------- Input
 function pos(e){return [e.clientX,e.clientY];}
 cv.addEventListener('pointerdown',e=>{
   if(state!=='play'||drag) return;
-  drag=true; pid=e.pointerId; showRake=true;
+  drag=true; pid=e.pointerId; showRake=true; lastCarried=0;
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
   [rx,ry]=pos(e); px=rx; py=ry;
 });
@@ -748,22 +1078,9 @@ cv.addEventListener('pointerup',lift);
 cv.addEventListener('pointercancel',lift);
 cv.addEventListener('pointerleave',e=>{if(!drag&&e.pointerType==='mouse') showRake=false;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('visibilitychange',()=>{if(document.hidden){drag=false; pid=null;}});
-
-function begin(){
-  initAudio(); if(ac&&ac.state==='suspended') ac.resume();
-  reset(); state='play';
-  $('start').hidden=true; $('end').hidden=true;
-}
-$('go').addEventListener('click',begin);
-$('again').addEventListener('click',begin);
-$('change').addEventListener('click',()=>{state='intro'; reset(); renderLevels(); $('end').hidden=true; $('start').hidden=false;});
-$('mute').addEventListener('click',()=>{
-  muted=!muted;
-  $('mute').textContent=muted?'Sound off':'Sound on';
-  $('mute').setAttribute('aria-pressed',String(muted));
-  audioTick();
-});
+document.addEventListener('visibilitychange',()=>{if(document.hidden) pause();});
+addEventListener('pagehide',saveRound);
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(state==='play') pause(); else if(state==='paused') resume();}});
 
 let last=performance.now();
 function frame(now){
@@ -774,6 +1091,6 @@ function frame(now){
 }
 let resizeTimer=0;
 addEventListener('resize',()=>{clearTimeout(resizeTimer); resizeTimer=setTimeout(layout,120);});
-layout(); reset(); renderLevels();
+layout(); reset(); goTitle();
 requestAnimationFrame(frame);
 </script>
