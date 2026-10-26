@@ -7,3 +7,15 @@ Lawns: Stowe, Vermont (golden hour, gentle gusts) and Jackson, New Hampshire (ea
 Scoring: 10 points per leaf, pile multipliers (x2/x3/x5) for bagging a big pile at once, a daylight bonus for clearing early, 250 per hidden find. Stars at 60/85/97% cleared, or 3 for clearing early. Best scores and the finds album are saved in localStorage.
 
 `rake-before-dark.html` is written as a Claude artifact page (no doctype/head; the host adds them) and is published at https://claude.ai/artifact/Rhf4L2N8WJHVrrma3C23en. It also opens directly in a browser.
+
+## Web app
+
+Hosted with GitHub Pages from `main` at https://ian2j.github.io/rake-before-dark/. Open it on a phone and use Add to Home Screen to install it; it then runs full-screen and offline.
+
+After editing `rake-before-dark.html`, rebuild and commit the generated files:
+
+```bash
+python3 build.py
+```
+
+`build.py` writes `index.html` (full page with manifest, icons and service worker registration) and `sw.js` (offline cache, versioned by a hash of the page). `tools/make_icons.py` regenerates `icons/`.
