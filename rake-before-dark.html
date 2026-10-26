@@ -286,12 +286,23 @@ const LEVELS={
       {id:'compass',e:'🧭',name:'Pocket compass',fact:'Bass Harbor Head Light has marked the entrance to Bass Harbor since 1858.'},
       {id:'berries',e:'🫐',name:'Pint of wild blueberries',fact:'Maine grows nearly all of the wild blueberries harvested in the US.'},
       {id:'meq',e:'🪙',name:'2003 Maine quarter',fact:'It shows Pemaquid Point Light and a schooner under sail.'},
-      {id:'pack',e:'🎒',name:'Daypack',fact:'John D. Rockefeller Jr. paid for Acadia’s 45 miles of carriage roads, built between 1913 and 1940.'}]}
+      {id:'pack',e:'🎒',name:'Daypack',fact:'John D. Rockefeller Jr. paid for Acadia’s 45 miles of carriage roads, built between 1913 and 1940.'}]},
+  ma:{id:'ma',town:'Salem',state:'Massachusetts',lat:42.5195,lon:-70.8967,
+    desc:'Halloween dusk in the Witch City. After sunset, trick-or-treaters head straight for your biggest pile. Rake over them to shoo them off.',
+    wind:1,gustEvery:[11,17],snow:false,kids:true,
+    leafWeights:[0.24,0.22,0.18,0.1,0.06,0.2],
+    tree:['#8e2a16','#a8331a','#c4491f','#8a4a25','#d0682a'],treeDark:'#5e2412',
+    facts:['Salem’s Haunted Happenings festival runs through the whole month of October.',
+      'The witch trials of 1692 began in Salem Village, now the town of Danvers. Twenty people were executed.',
+      'The House of the Seven Gables, built in 1668, gave Nathaniel Hawthorne the title of his 1851 novel.'],
+    finds:[{id:'anchor',e:'⚓',name:'Brass anchor charm',fact:'Salem Maritime, set up in 1938 around the old wharves, was the first National Historic Site in the US.'},
+      {id:'maq',e:'🪙',name:'2000 Massachusetts quarter',fact:'It shows the Minuteman statue from Concord over an outline of the state.'},
+      {id:'book',e:'📕',name:'Copy of The Scarlet Letter',fact:'Hawthorne was born in Salem in 1804 and worked at its Custom House, which opens the novel.'},
+      {id:'broom',e:'🧹',name:'Toy broomstick',fact:'Salem police cars carry a witch on a broomstick on their door emblem.'},
+      {id:'pumpkin',e:'🎃',name:'Mini pumpkin',fact:'In Ireland, jack-o’-lanterns were carved from turnips. Immigrants to America switched to pumpkins.'}]}
 };
 const PLACES=[
-  {id:'vt'},{id:'nh'},{id:'me'},
-  {id:'ma',town:'Salem',state:'Massachusetts',soon:'October in the Witch City, with trick-or-treaters who can’t resist a leaf pile.',
-    facts:['Salem’s Haunted Happenings festival runs through the whole month of October.']}
+  {id:'vt'},{id:'nh'},{id:'me'},{id:'ma'}
 ].map(p=>LEVELS[p.id]?{...LEVELS[p.id],level:true}:p);
 
 // Saved per viewer: options, best score and stars per lawn and difficulty, the finds album, and an interrupted round.
@@ -323,6 +334,8 @@ let tarp={x:0,y:0,w:0,h:0}, tp={x:0,y:0,w:0,h:0}, tarpScale=1, bag={x:0,y:0}, tr
 let leaves=[], state='title', elapsed=0, playT=0, bagged=0, fell=0, N0=300, spawnAcc=0, groundLeft=0;
 let score=0, pileBonus=0, dayBonus=0, findBonus=0, bestPile=0, dump={n:0,last:0}, endedEarly=false, endClock=0;
 let items=[], popups=[], flakes=[], pickups=[], active={}, nextPower=10;
+let kids=[], nextKid=0, kidsT=-1;
+const KID_COSTUMES=['👻','🧙','🧛','🧟','🦇'];
 let sun, T0, T1, pSun=0.6, LKEYS=[];
 let gust=null, nextGust=13, env=0, wx=0, wy=0, streaks=[], snowAmt=0;
 let drag=false, pid=null, showRake=false, rx=0, ry=0, px=0, py=0, rdx=0, rdy=-1, rakeSpeed=0, carried=0, lastCarried=0;
@@ -453,6 +466,7 @@ function reset(){
   leaves=[]; bagged=0; fell=0; elapsed=0; playT=0; spawnAcc=0; snowAmt=0;
   score=pileBonus=dayBonus=findBonus=bestPile=0; dump={n:0,last:0}; endedEarly=false; popups=[];
   pickups=[]; active={}; nextPower=10; tarpScale=1; placeTarp();
+  kids=[]; nextKid=0; kidsT=-1;
   $('chips').innerHTML=''; chipKey='';
   gust=null; nextGust=LV.gustEvery[0]+3; env=0; wx=wy=0; drag=false; lastCarried=0;
   N0=Math.round(clamp(W*H/420,560,1400)*(LV.leafMul||1));
@@ -640,10 +654,13 @@ function update(dt){
       const inBox=(x,y,pad)=>{const lx=x-rx, ly=y-ry, al=lx*dx+ly*dy; return al<=14*K+pad&&al>=-len-10-pad&&Math.abs(-lx*dy+ly*dx)<=HALF+pad;};
       for(const it of items) if(!it.raked&&inBox(it.x,it.y,0)) it.raked=true;
       for(const u of pickups) if(u.z<=0&&!u.got&&inBox(u.x,u.y,8*K)) activate(u);
+      for(const k of kids) if(k.st==='seek'&&inBox(k.x,k.y,12*K)){k.st='shoo'; score+=50; popup('Shoo!  +50',k.x,k.y-24*K,false);}
       scrapeStroke(px,py,rx,ry,dx,dy,HALF);
     }
     px=rx; py=ry;
   }
+
+  if(LV.kids) updateKids(dt,p);
 
   const spin=Math.exp(-4*dt), bx=bag.x, by=bag.y-14*K, bury=0.045*snowAmt*dt;
   groundLeft=0;
@@ -711,11 +728,96 @@ function update(dt){
   else if(elapsed>=D.secs) finish(false);
 }
 
+// Trick-or-treaters come out at sunset, walk to the densest patch of leaves off the tarp, jump in and scatter it.
+function densestPile(){
+  let best=11, at=null;
+  const gh=grid.length/gw;
+  for(let cy=0;cy<gh;cy++) for(let cx=0;cx<gw;cx++){
+    const n=grid[cy*gw+cx];
+    if(n<=best) continue;
+    const x=(cx+0.5)*CELL, y=(cy+0.5)*CELL;
+    if(inTarp(x,y,10)||x<MINX||x>MAXX||y<MINY||y>MAXY) continue;
+    best=n; at=[x,y];
+  }
+  return at;
+}
+function updateKids(dt,p){
+  if(p>pSun-0.05&&playT>=nextKid){
+    const left=Math.random()<0.5;
+    kids.push({x:left?-24:W+24,y:MINY+60+Math.random()*Math.max(1,MAXY-MINY-200),e:KID_COSTUMES[(Math.random()*KID_COSTUMES.length)|0],st:'seek',t:0,jt:0,ph:Math.random()*6.283});
+    nextKid=playT+(7+Math.random()*4)*D.gustGap;
+    if(kidsT<0) kidsT=playT;
+  }
+  const target=kids.some(k=>k.st==='seek')?densestPile():null;
+  for(const k of kids){
+    k.t+=dt;
+    if(k.st==='seek'){
+      if(!target){k.st='leave'; continue;}
+      const dx=target[0]-k.x, dy=target[1]-k.y, d=Math.hypot(dx,dy), sp=90*K*dt;
+      if(d<=sp+2){
+        k.x=target[0]; k.y=target[1]; k.st='jump'; k.jt=0;
+        const R=48*K;
+        for(const l of leaves){
+          if(l.st!==0) continue;
+          const lx=l.x-k.x, ly=l.y-k.y, ld=Math.hypot(lx,ly);
+          if(ld>R) continue;
+          const a=ld>0.5?Math.atan2(ly,lx):Math.random()*6.283, v=(260+Math.random()*260)*K*(1-0.4*ld/R);
+          l.vx+=Math.cos(a)*v; l.vy+=Math.sin(a)*v; l.va+=(Math.random()-0.5)*20;
+        }
+        popup('Wheee!',k.x,k.y-26*K,false); chime(false);
+      }else{k.x+=dx/d*sp; k.y+=dy/d*sp;}
+    }else if(k.st==='jump'){
+      k.jt+=dt; if(k.jt>0.7) k.st='leave';
+    }else{
+      const ex=k.x<W/2?-40:W+40, sp=(k.st==='shoo'?210:95)*K*dt;
+      k.x+=Math.sign(ex-k.x)*sp;
+    }
+  }
+  kids=kids.filter(k=>k.x>-60&&k.x<W+60);
+}
+const lanterns=()=>[[MINX+14*K,MAXY-16*K],[MAXX-14*K,MINY+(MAXY-MINY)*0.45]];
+function drawLanterns(p){
+  if(!LV.kids) return;
+  const lit=smooth((p-pSun+0.05)/0.1);
+  for(const [x,y] of lanterns()){
+    const r=11*K;
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x+3,y+4,r*1.1,r*0.9,0,0,6.283); ctx.fill();
+    ctx.fillStyle='#e0761f'; ctx.beginPath(); ctx.ellipse(x,y,r*1.1,r*0.9,0,0,6.283); ctx.fill();
+    ctx.strokeStyle='#b4561a'; ctx.lineWidth=1.2; ctx.beginPath();
+    for(const o of [-0.45,0,0.45]){ctx.moveTo(x+o*r,y-r*0.85); ctx.quadraticCurveTo(x+o*r*1.6,y,x+o*r,y+r*0.85);}
+    ctx.stroke();
+    ctx.fillStyle='#4a6b2a'; ctx.fillRect(x-1.5*K,y-r*1.15,3*K,4*K);
+    ctx.fillStyle=lit>0.05?`rgb(255,${Math.round(150+70*lit)},${Math.round(60*lit)})`:'#5a2a0c';
+    ctx.beginPath();
+    for(const s of [-1,1]){ctx.moveTo(x+s*r*0.45,y-r*0.35); ctx.lineTo(x+s*r*0.25,y-r*0.05); ctx.lineTo(x+s*r*0.65,y-r*0.05); ctx.closePath();}
+    ctx.moveTo(x-r*0.55,y+r*0.25); ctx.quadraticCurveTo(x,y+r*0.7,x+r*0.55,y+r*0.25); ctx.quadraticCurveTo(x,y+r*0.45,x-r*0.55,y+r*0.25);
+    ctx.fill();
+  }
+}
+function drawKids(){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const k of kids){
+    const hop=k.st==='jump'?Math.sin(Math.PI*Math.min(k.jt/0.5,1)):0, bob=k.st==='jump'?0:Math.abs(Math.sin(k.t*9+k.ph))*3*K;
+    ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(k.x+4,k.y+12*K,10*K*(1-0.3*hop),5*K,0,0,6.283); ctx.fill();
+    ctx.font=`${26*K*(1+0.45*hop)}px ${EMOJI_FONT}`;
+    ctx.fillText(k.e,k.x,k.y-bob-hop*22*K);
+  }
+}
+function drawHalloweenLight(q){
+  if(!LV.kids||q<=0) return;
+  ctx.globalCompositeOperation='lighter';
+  const glow=(x,y,r,a)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(255,170,70,${a})`); g.addColorStop(1,'rgba(255,170,70,0)'); ctx.fillStyle=g; ctx.fillRect(x-r,y-r,2*r,2*r);};
+  for(const [x,y] of lanterns()) glow(x,y,70*K,0.3*q);
+  for(const k of kids) glow(k.x,k.y,45*K,0.16*q);
+  ctx.globalCompositeOperation='source-over';
+}
+
 let chipKey='';
 function updateChips(p){
   const list=[];
   if(!gust&&playT>=nextGust-1.6) list.push(['','Gust incoming']);
   else if(LV.snow&&p>0.12&&p<0.2) list.push(['','Snow moving in']);
+  else if(LV.kids&&kidsT>=0&&playT-kidsT<2.5) list.push(['bad','Trick-or-treaters!']);
   else if(LV.fog){
     const i=FOG_BANKS.findIndex(([c,w])=>p>c-w-0.05&&p<c-w*0.4);
     if(i>=0){list.push(['','Fog rolling in']); if(hornAt!==i){hornAt=i; foghorn();}}
@@ -937,6 +1039,7 @@ function drawLight(p){
     gr.addColorStop(0,`rgba(255,180,100,${0.26*q})`); gr.addColorStop(1,'rgba(255,180,100,0)');
     ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
   }
+  drawHalloweenLight(q);
   ctx.globalCompositeOperation='source-over';
   const vg=ctx.createRadialGradient(W/2,H/2,m*0.35,W/2,H/2,Math.hypot(W,H)*0.6);
   vg.addColorStop(0,'rgba(12,6,22,0)'); vg.addColorStop(1,`rgba(12,6,22,${0.3+0.3*p})`);
@@ -972,6 +1075,7 @@ function draw(){
   for(const l of leaves) if(l.st===1){ctx.beginPath(); ctx.ellipse(l.x+l.z*26*K,l.y+l.z*34*K,5*K,3*K,0,0,6.283); ctx.fill();}
   for(const l of leaves) if(l.st===1) drawLeaf(l,1+l.z*0.9);
   ctx.globalAlpha=1; ctx.setTransform(DPR,0,0,DPR,0,0);
+  drawLanterns(p); drawKids();
   fogAmt=fogAt(p);
   drawPickups(); drawCanopy(); drawFlakes(); drawFog(); drawLighthouse(); drawRake(); drawWind(); drawLight(p); drawBeamGlow(); drawPopups();
 

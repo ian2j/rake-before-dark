@@ -2,7 +2,7 @@
 
 Browser game: rake New England lawns onto the tarp before civil dusk. Sunset and dusk times are computed for each lawn's real location on the current date.
 
-Lawns: Stowe, Vermont (golden hour, gentle gusts) and Jackson, New Hampshire (early snowstorm, strong gusts), and Bass Harbor, Maine (Acadia: two trees' worth of leaves, fog banks, a lighthouse beam), picked from a map of New England with facts about each town. Salem is on the map as coming soon.
+Lawns: Stowe, Vermont (golden hour, gentle gusts) and Jackson, New Hampshire (early snowstorm, strong gusts), and Bass Harbor, Maine (Acadia: two trees' worth of leaves, fog banks, a lighthouse beam), and Salem, Massachusetts (Halloween: trick-or-treaters jump into your piles after sunset; rake over them to shoo them), picked from a map of New England with facts about each town.
 
 Scoring: 10 points per leaf, pile multipliers (x2/x3/x5) for bagging a big pile at once, a daylight bonus for clearing early, 250 per hidden find. Stars at 50/75/90% cleared, or 3 for clearing early. Acorns give power-ups (T big tarp, R wide rake, S sun stop); pinecones shrink the rake. Difficulty (Relaxed/Standard/Hard) is in Options. Best scores per lawn and difficulty, the finds album, and an interrupted round (Continue) are saved in localStorage. The map outlines come from the us-atlas Census data, projected with d3-geo.
 
