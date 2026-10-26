@@ -231,7 +231,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const EMOJI_FONT='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 
 // New England states, projected (conic conformal) from the US Census atlas.
-const MAP={"w":300,"h":360,"states":[{"id":"ME","d":"M228.6,180.5L230.5,180.1L229.6,181.8ZM223.7,182.5L224.5,178.7L228.1,182.6L226.1,184.7ZM222.3,172.7L222.6,170.8L224.2,174ZM210.6,178.9L212.5,178.7L213,180.6ZM208.5,199.3L209.5,197.6L209.8,201ZM206.8,185.6L207.9,183.6L211.2,181.5L212.8,183.7L211.6,184.1L213.6,187.6L212.2,189.4L209.7,190.1L208,189.1L208.7,187.9L208.2,185.6ZM205.8,178.2L207.5,175L207.7,172.1L208.9,170.9L209.7,172.1L208.5,173.7L208.7,175.4L207.7,178.6L206.4,180ZM140.3,242.8L135.4,239.2L135.4,236L136.2,234.1L130.5,228.3L129.2,225.9L130.3,221.3L129.8,220.8L130.6,216.8L129.7,215.7L129,201.5L128.9,197.4L127.2,158.2L125,123.6L127.8,122.9L127.8,121.4L131.2,123.3L132,127L133.5,127.6L135.2,123.7L135.4,119.8L134.6,118.5L136.2,116.9L138.9,119L141.7,119.4L141.8,117.6L138.6,113.8L138.4,112.4L141.3,107.5L144.6,104.2L145.7,104.3L147.7,102.4L150.8,100.6L149.6,97.4L152.4,94.3L155.4,92.2L156,89.7L155.1,88.4L153.2,88.4L153.2,85.4L154.5,83.7L153.4,83L155.3,80.7L156,78.6L154,76.6L156.9,68.8L159.1,67.3L160.9,64.5L162.3,64.2L164.3,49.3L191.4,8L193,8.1L196.6,9.7L198,9.5L197.7,12.2L198,18.6L198.5,19.4L203.4,22.6L206.6,20.5L210,19.1L213.6,18.8L214.9,16.4L218.8,15.8L222.1,16.2L221.9,13.4L224,12.3L227.2,12.4L230.3,13.9L230.8,15.4L235.2,18.3L240.2,24.1L240.2,24.8L243.9,27L245,51.9L246.8,83.5L246.8,86.7L248.1,88.1L246.2,89.9L248.2,93L246.3,94.7L246.7,100.9L249.8,101.6L250.1,100.6L251.6,103.2L254.2,104.3L258.2,105.2L260,104.2L261.2,107L261.5,109.6L259.8,109.3L258.3,110.3L259.4,113.4L261.7,116.2L260.7,119.6L259.4,121.5L262.7,126.6L262.8,127.7L265.3,129.4L267,128L267,125.9L269.5,127.2L272.1,127.2L273.9,129.6L274.9,131.9L273.8,132.6L275.2,134L277.1,138.4L279.2,140L279.6,145.4L278.1,147.7L276.8,147.7L276.3,149.2L272.3,154.6L269.1,155.9L269.7,156.8L267.6,157.3L268.4,155.4L267.6,151.5L264,153.1L265.8,155.6L264.3,157.7L262.7,157.1L261.1,159.9L259.3,159.1L258,159.7L258.3,161.3L260.6,163L257.7,165.8L255.8,163.8L254.9,161.2L253.2,161.7L251.7,163.4L250.7,160.8L249.8,163.6L248.6,164.3L247.7,167.7L246.7,166.9L246,169.1L245.4,167.3L242.7,169.7L242,168.5L240.6,172.8L238.3,171.1L238.2,169.4L235.4,170.1L235.8,173.1L233.7,176.4L235.3,177.8L230.6,178.8L227.4,177.4L225,172.6L225.8,171.3L228.7,169.9L227.4,167.9L225.7,169.6L225.9,167.6L224,168L220.8,170.6L221.6,172.2L220.8,174.2L222.8,177.2L222.5,179.2L219.5,182.9L220.7,183.3L219.1,184.8L220.7,187.3L220.2,190.5L218,191L217.4,187.1L218.3,186.9L217.8,184.4L215.4,182.5L214.7,179.6L216.7,177.2L214,175.4L213.4,173.8L211,174.8L211,169.7L212.4,167.6L212.5,165.3L211.5,164.7L210.6,166.9L208.8,168.7L207.2,167.3L206.3,168.8L204.3,169L206.3,172.7L206,174.9L204.4,175.9L203.1,179.2L202.7,182.5L201,186.1L203.6,187.4L201.9,188.8L203.3,191.3L202,193.1L198.3,193L196.6,196.3L194.5,196.4L194.3,199.1L192.8,199.5L192.8,197.2L193.7,195.5L190.4,196.8L191,193.8L188.6,194.3L188.8,196.7L186.6,198.4L186,200.7L184.3,198.4L184.1,200.6L182,202.1L180.4,200.9L180,204L178.2,201.7L176.5,205.9L172.7,208.1L171.9,204.3L169.7,204.1L167.7,206.1L167,207.9L164.3,207.7L163.3,210L160.6,209.8L159.2,212.1L158.8,214.4L159.6,215.7L158.5,217.2L156.7,215.9L153.6,217.3L152.4,219.4L153.3,222.5L150.8,225.2L151.3,226.7L149.3,227.8L147.4,227.6L146,228.8L144.6,233.3L145.3,234.1L143.4,237.8L143.5,238.8L141.6,242.2Z"},{"id":"MA","d":"M158.3,335.5L160.1,336.5L164.3,336.2L166.9,335.4L168.5,332.2L170.9,336.9L169.4,339.1L164.6,339L158.7,336.3ZM136,333.4L138.6,333.4L141.3,329.3L145.1,326.5L146.7,327.2L147.7,330.4L149.9,331.6L151.3,329.7L151.2,333.5L145.4,333.6L140.9,334L138.4,336.2ZM40.7,258.9L72.1,260.4L99.9,261.6L117.6,262.2L118.9,260.1L121.9,260L121.7,257.2L123.8,255.6L126.5,256.4L127.7,253.5L132.7,252L134.9,253.4L136,252.8L136.3,256.1L137.6,262.3L141.1,264.4L142.8,262.4L144.7,264L142.5,268.1L139.3,268.4L134,270.1L135.7,272.4L133.2,274.7L132.2,274.2L131.5,276.9L130.9,275.1L129.4,277.5L131,280.9L129.1,280.4L128.5,281.7L129.6,282.9L128.9,284.1L130.9,284.7L131.7,283.1L133.7,282.7L135,284.9L138.4,286.1L140.1,288L140.4,290.1L143.4,294.3L143.3,296.6L141,299.7L144,302L145.7,301.6L146.9,302.7L148,306.5L147.4,308.8L149.2,310.9L152.5,312.5L157.4,313L158.7,314L161.3,312L164,311.6L167.8,310L168.7,308.8L168.5,305.2L167.6,302.5L165.7,303.9L165.7,299.5L164.9,297L162.8,295.5L160.8,297.6L159.2,294.9L161.1,294.4L164,295.2L167.3,297.8L170,303.3L171.4,308.7L171.8,315L169.7,320.9L169.5,322.9L168.5,322.5L170.1,317.4L169.1,316.4L165.4,316.6L159.3,318.6L155,318.3L154,319.6L151.6,319.9L149.5,322.8L144.8,323.3L140,326.3L137.7,328.5L134.7,329.8L131.4,330.5L132.3,329.3L137.3,327.7L139.6,325.6L143,323.3L143.7,321.5L143.3,316.1L144.1,314.2L140.4,313.1L140.5,315.8L139.5,315.2L138.9,317.4L136.9,317.3L137.2,318.8L132.8,319.3L131.3,324.9L127.7,326L126,325.2L124.6,325.8L124.1,317.2L121.5,316.4L120.4,314.5L119,312.4L116.3,310.9L115.5,308.3L115.8,304.6L114.1,304.9L114.1,298.2L97.7,298.8L97.5,297.9L68.9,297.1L59.9,296.9L59.4,298.7L57.5,298.9L57.6,296.9L50,296.6L33.3,295.6L31.2,295.6L30.4,293.7L35.6,275.8Z"},{"id":"CT","d":"M31.2,295.6L33.3,295.6L50,296.6L57.6,296.9L57.5,298.9L59.4,298.7L59.9,296.9L68.9,297.1L97.5,297.9L97.7,298.8L98.1,313.8L98,320.6L97.6,330.1L95.8,330.5L96.3,334L95.1,335.3L91.7,334.3L88.7,335.4L86.1,335.2L84.2,336.3L81.9,335L81.1,336.7L74,338.2L71.5,337.3L67.6,338.7L66.7,337.8L63,337.7L62,338.9L59.4,337.8L53.7,338.9L53.3,336.2L52,336.9L49.2,340.6L47.5,340.6L44.3,343.9L42.4,342.8L38.9,345.3L37.9,344.7L34.6,345.9L35.3,347L33.8,348.4L29.6,348.8L26.4,351.2L25.1,350.5L22.9,352L23.1,350.5L20.4,345.8L30.3,340.1L27.7,335.6L28.4,328.3L29.4,314.8Z"},{"id":"NH","d":"M109.4,139.2L109.8,136.1L112.3,133.1L111.9,132.5L113.3,129.1L111.6,127.4L114,126.9L114.5,125.7L117.5,123.8L119.5,126.6L123.3,126.8L125,123.6L127.2,158.2L128.9,197.4L129,201.5L129.7,215.7L130.6,216.8L129.8,220.8L130.3,221.3L129.2,225.9L130.5,228.3L136.2,234.1L135.4,236L135.4,239.2L140.3,242.8L136.2,250.8L136,252.8L134.9,253.4L132.7,252L127.7,253.5L126.5,256.4L123.8,255.6L121.7,257.2L121.9,260L118.9,260.1L117.6,262.2L99.9,261.6L72.1,260.4L70.8,258L70,258.4L68.4,253.7L69.7,250.4L69.8,247.8L71.6,247.4L72.8,245.3L72,243L73.2,241.5L72.6,238.5L73.2,232.2L74.9,229.3L74.1,226.6L75.6,220.4L74.9,218.8L75.6,215.5L77.7,214L78.6,209L79.8,207L82.5,205.1L83.3,203.1L83.2,200.2L85.8,197.1L85.9,193.2L89.2,188.1L89.2,186L87.8,182.9L88.7,180.3L87.9,178.7L89.3,175.9L94,174.5L95.4,175.1L97.6,174.1L98.3,171.8L101.5,171.1L103.4,169.4L104.4,167.3L106.6,166.3L105.8,163.6L107.3,163L107.5,159.7L106.2,158L104.7,153.3L106.7,150.9L107.3,148L109.7,144.6L108,140.5Z"},{"id":"VT","d":"M40.3,138.6L49.9,138.5L65.4,138.8L70.7,139.3L79.1,139.6L109.4,139.2L108,140.5L109.7,144.6L107.3,148L106.7,150.9L104.7,153.3L106.2,158L107.5,159.7L107.3,163L105.8,163.6L106.6,166.3L104.4,167.3L103.4,169.4L101.5,171.1L98.3,171.8L97.6,174.1L95.4,175.1L94,174.5L89.3,175.9L87.9,178.7L88.7,180.3L87.8,182.9L89.2,186L89.2,188.1L85.9,193.2L85.8,197.1L83.2,200.2L83.3,203.1L82.5,205.1L79.8,207L78.6,209L77.7,214L75.6,215.5L74.9,218.8L75.6,220.4L74.1,226.6L74.9,229.3L73.2,232.2L72.6,238.5L73.2,241.5L72,243L72.8,245.3L71.6,247.4L69.8,247.8L69.7,250.4L68.4,253.7L70,258.4L70.8,258L72.1,260.4L40.7,258.9L39.7,255.9L40.3,250.8L41.6,231.6L42.2,216L40.4,214.6L40.2,212.2L37.6,212.1L36.5,215.1L35.2,213.9L36.3,208.7L38.6,204.4L37,201.7L37.7,198.8L36.4,195.7L36.7,191L35.5,189.8L37.4,182.2L40.1,179.3L40.7,177.7L39.8,172.5L41.5,168.9L41.1,165.7L38.6,161.7L38.1,158.4L39,152.9L40.4,150.4L38.7,147.7L40.3,143.5Z"},{"id":"RI","d":"M121.5,316.4L124.1,317.2L124.6,325.8L121.7,327.9L120.8,323.3L121.1,320.4L119.7,319.4L120,326.6L117.6,326.5L117.3,328.1L115.9,328.5L115.7,326L118,321.6L119.1,318.5ZM114.8,317.2L115.6,316.9L117.1,319.2L116.4,319.6ZM113.4,327.8L114.3,325.5L113.7,324.5L114.4,321.9L115,322.8L115,326.6ZM105,343.8L106.6,340.2L107.3,340.8L107.4,344.3ZM95.1,335.3L96.3,334L95.8,330.5L97.6,330.1L98,320.6L98.1,313.8L97.7,298.8L114.1,298.2L114.1,304.9L115.8,304.6L115.5,308.3L116.3,310.9L119,312.4L120.4,314.5L120,316.6L118,318.5L117.1,316.6L117.7,315L115,312.5L113.8,310.7L114.6,316.6L111.4,315.8L113.1,317.6L113.3,321L111.6,321.5L112.7,323.9L112.7,327.2L111.3,329.2L110.1,332.6L108.4,332.3L104.6,333.1L100.7,334.7L95.3,336Z"}],"pts":{"vt":[64.5,168],"nh":[121.5,185.3],"me":[234.5,170],"ma":[133.1,271.5]},"labels":{"ME":[194,120.2],"MA":[98,285.7],"CT":[60.8,319],"NH":[106.4,210],"VT":[65,189],"RI":[107.4,316.5]}};
+const MAP={"w":300,"h":360,"states":[{"id":"ME","d":"M228.6,180.5L230.5,180.1L229.6,181.8ZM223.7,182.5L224.5,178.7L228.1,182.6L226.1,184.7ZM222.3,172.7L222.6,170.8L224.2,174ZM210.6,178.9L212.5,178.7L213,180.6ZM208.5,199.3L209.5,197.6L209.8,201ZM206.8,185.6L207.9,183.6L211.2,181.5L212.8,183.7L211.6,184.1L213.6,187.6L212.2,189.4L209.7,190.1L208,189.1L208.7,187.9L208.2,185.6ZM205.8,178.2L207.5,175L207.7,172.1L208.9,170.9L209.7,172.1L208.5,173.7L208.7,175.4L207.7,178.6L206.4,180ZM140.3,242.8L135.4,239.2L135.4,236L136.2,234.1L130.5,228.3L129.2,225.9L130.3,221.3L129.8,220.8L130.6,216.8L129.7,215.7L129,201.5L128.9,197.4L127.2,158.2L125,123.6L127.8,122.9L127.8,121.4L131.2,123.3L132,127L133.5,127.6L135.2,123.7L135.4,119.8L134.6,118.5L136.2,116.9L138.9,119L141.7,119.4L141.8,117.6L138.6,113.8L138.4,112.4L141.3,107.5L144.6,104.2L145.7,104.3L147.7,102.4L150.8,100.6L149.6,97.4L152.4,94.3L155.4,92.2L156,89.7L155.1,88.4L153.2,88.4L153.2,85.4L154.5,83.7L153.4,83L155.3,80.7L156,78.6L154,76.6L156.9,68.8L159.1,67.3L160.9,64.5L162.3,64.2L164.3,49.3L191.4,8L193,8.1L196.6,9.7L198,9.5L197.7,12.2L198,18.6L198.5,19.4L203.4,22.6L206.6,20.5L210,19.1L213.6,18.8L214.9,16.4L218.8,15.8L222.1,16.2L221.9,13.4L224,12.3L227.2,12.4L230.3,13.9L230.8,15.4L235.2,18.3L240.2,24.1L240.2,24.8L243.9,27L245,51.9L246.8,83.5L246.8,86.7L248.1,88.1L246.2,89.9L248.2,93L246.3,94.7L246.7,100.9L249.8,101.6L250.1,100.6L251.6,103.2L254.2,104.3L258.2,105.2L260,104.2L261.2,107L261.5,109.6L259.8,109.3L258.3,110.3L259.4,113.4L261.7,116.2L260.7,119.6L259.4,121.5L262.7,126.6L262.8,127.7L265.3,129.4L267,128L267,125.9L269.5,127.2L272.1,127.2L273.9,129.6L274.9,131.9L273.8,132.6L275.2,134L277.1,138.4L279.2,140L279.6,145.4L278.1,147.7L276.8,147.7L276.3,149.2L272.3,154.6L269.1,155.9L269.7,156.8L267.6,157.3L268.4,155.4L267.6,151.5L264,153.1L265.8,155.6L264.3,157.7L262.7,157.1L261.1,159.9L259.3,159.1L258,159.7L258.3,161.3L260.6,163L257.7,165.8L255.8,163.8L254.9,161.2L253.2,161.7L251.7,163.4L250.7,160.8L249.8,163.6L248.6,164.3L247.7,167.7L246.7,166.9L246,169.1L245.4,167.3L242.7,169.7L242,168.5L240.6,172.8L238.3,171.1L238.2,169.4L235.4,170.1L235.8,173.1L233.7,176.4L235.3,177.8L230.6,178.8L227.4,177.4L225,172.6L225.8,171.3L228.7,169.9L227.4,167.9L225.7,169.6L225.9,167.6L224,168L220.8,170.6L221.6,172.2L220.8,174.2L222.8,177.2L222.5,179.2L219.5,182.9L220.7,183.3L219.1,184.8L220.7,187.3L220.2,190.5L218,191L217.4,187.1L218.3,186.9L217.8,184.4L215.4,182.5L214.7,179.6L216.7,177.2L214,175.4L213.4,173.8L211,174.8L211,169.7L212.4,167.6L212.5,165.3L211.5,164.7L210.6,166.9L208.8,168.7L207.2,167.3L206.3,168.8L204.3,169L206.3,172.7L206,174.9L204.4,175.9L203.1,179.2L202.7,182.5L201,186.1L203.6,187.4L201.9,188.8L203.3,191.3L202,193.1L198.3,193L196.6,196.3L194.5,196.4L194.3,199.1L192.8,199.5L192.8,197.2L193.7,195.5L190.4,196.8L191,193.8L188.6,194.3L188.8,196.7L186.6,198.4L186,200.7L184.3,198.4L184.1,200.6L182,202.1L180.4,200.9L180,204L178.2,201.7L176.5,205.9L172.7,208.1L171.9,204.3L169.7,204.1L167.7,206.1L167,207.9L164.3,207.7L163.3,210L160.6,209.8L159.2,212.1L158.8,214.4L159.6,215.7L158.5,217.2L156.7,215.9L153.6,217.3L152.4,219.4L153.3,222.5L150.8,225.2L151.3,226.7L149.3,227.8L147.4,227.6L146,228.8L144.6,233.3L145.3,234.1L143.4,237.8L143.5,238.8L141.6,242.2Z"},{"id":"MA","d":"M158.3,335.5L160.1,336.5L164.3,336.2L166.9,335.4L168.5,332.2L170.9,336.9L169.4,339.1L164.6,339L158.7,336.3ZM136,333.4L138.6,333.4L141.3,329.3L145.1,326.5L146.7,327.2L147.7,330.4L149.9,331.6L151.3,329.7L151.2,333.5L145.4,333.6L140.9,334L138.4,336.2ZM40.7,258.9L72.1,260.4L99.9,261.6L117.6,262.2L118.9,260.1L121.9,260L121.7,257.2L123.8,255.6L126.5,256.4L127.7,253.5L132.7,252L134.9,253.4L136,252.8L136.3,256.1L137.6,262.3L141.1,264.4L142.8,262.4L144.7,264L142.5,268.1L139.3,268.4L134,270.1L135.7,272.4L133.2,274.7L132.2,274.2L131.5,276.9L130.9,275.1L129.4,277.5L131,280.9L129.1,280.4L128.5,281.7L129.6,282.9L128.9,284.1L130.9,284.7L131.7,283.1L133.7,282.7L135,284.9L138.4,286.1L140.1,288L140.4,290.1L143.4,294.3L143.3,296.6L141,299.7L144,302L145.7,301.6L146.9,302.7L148,306.5L147.4,308.8L149.2,310.9L152.5,312.5L157.4,313L158.7,314L161.3,312L164,311.6L167.8,310L168.7,308.8L168.5,305.2L167.6,302.5L165.7,303.9L165.7,299.5L164.9,297L162.8,295.5L160.8,297.6L159.2,294.9L161.1,294.4L164,295.2L167.3,297.8L170,303.3L171.4,308.7L171.8,315L169.7,320.9L169.5,322.9L168.5,322.5L170.1,317.4L169.1,316.4L165.4,316.6L159.3,318.6L155,318.3L154,319.6L151.6,319.9L149.5,322.8L144.8,323.3L140,326.3L137.7,328.5L134.7,329.8L131.4,330.5L132.3,329.3L137.3,327.7L139.6,325.6L143,323.3L143.7,321.5L143.3,316.1L144.1,314.2L140.4,313.1L140.5,315.8L139.5,315.2L138.9,317.4L136.9,317.3L137.2,318.8L132.8,319.3L131.3,324.9L127.7,326L126,325.2L124.6,325.8L124.1,317.2L121.5,316.4L120.4,314.5L119,312.4L116.3,310.9L115.5,308.3L115.8,304.6L114.1,304.9L114.1,298.2L97.7,298.8L97.5,297.9L68.9,297.1L59.9,296.9L59.4,298.7L57.5,298.9L57.6,296.9L50,296.6L33.3,295.6L31.2,295.6L30.4,293.7L35.6,275.8Z"},{"id":"CT","d":"M31.2,295.6L33.3,295.6L50,296.6L57.6,296.9L57.5,298.9L59.4,298.7L59.9,296.9L68.9,297.1L97.5,297.9L97.7,298.8L98.1,313.8L98,320.6L97.6,330.1L95.8,330.5L96.3,334L95.1,335.3L91.7,334.3L88.7,335.4L86.1,335.2L84.2,336.3L81.9,335L81.1,336.7L74,338.2L71.5,337.3L67.6,338.7L66.7,337.8L63,337.7L62,338.9L59.4,337.8L53.7,338.9L53.3,336.2L52,336.9L49.2,340.6L47.5,340.6L44.3,343.9L42.4,342.8L38.9,345.3L37.9,344.7L34.6,345.9L35.3,347L33.8,348.4L29.6,348.8L26.4,351.2L25.1,350.5L22.9,352L23.1,350.5L20.4,345.8L30.3,340.1L27.7,335.6L28.4,328.3L29.4,314.8Z"},{"id":"NH","d":"M109.4,139.2L109.8,136.1L112.3,133.1L111.9,132.5L113.3,129.1L111.6,127.4L114,126.9L114.5,125.7L117.5,123.8L119.5,126.6L123.3,126.8L125,123.6L127.2,158.2L128.9,197.4L129,201.5L129.7,215.7L130.6,216.8L129.8,220.8L130.3,221.3L129.2,225.9L130.5,228.3L136.2,234.1L135.4,236L135.4,239.2L140.3,242.8L136.2,250.8L136,252.8L134.9,253.4L132.7,252L127.7,253.5L126.5,256.4L123.8,255.6L121.7,257.2L121.9,260L118.9,260.1L117.6,262.2L99.9,261.6L72.1,260.4L70.8,258L70,258.4L68.4,253.7L69.7,250.4L69.8,247.8L71.6,247.4L72.8,245.3L72,243L73.2,241.5L72.6,238.5L73.2,232.2L74.9,229.3L74.1,226.6L75.6,220.4L74.9,218.8L75.6,215.5L77.7,214L78.6,209L79.8,207L82.5,205.1L83.3,203.1L83.2,200.2L85.8,197.1L85.9,193.2L89.2,188.1L89.2,186L87.8,182.9L88.7,180.3L87.9,178.7L89.3,175.9L94,174.5L95.4,175.1L97.6,174.1L98.3,171.8L101.5,171.1L103.4,169.4L104.4,167.3L106.6,166.3L105.8,163.6L107.3,163L107.5,159.7L106.2,158L104.7,153.3L106.7,150.9L107.3,148L109.7,144.6L108,140.5Z"},{"id":"VT","d":"M40.3,138.6L49.9,138.5L65.4,138.8L70.7,139.3L79.1,139.6L109.4,139.2L108,140.5L109.7,144.6L107.3,148L106.7,150.9L104.7,153.3L106.2,158L107.5,159.7L107.3,163L105.8,163.6L106.6,166.3L104.4,167.3L103.4,169.4L101.5,171.1L98.3,171.8L97.6,174.1L95.4,175.1L94,174.5L89.3,175.9L87.9,178.7L88.7,180.3L87.8,182.9L89.2,186L89.2,188.1L85.9,193.2L85.8,197.1L83.2,200.2L83.3,203.1L82.5,205.1L79.8,207L78.6,209L77.7,214L75.6,215.5L74.9,218.8L75.6,220.4L74.1,226.6L74.9,229.3L73.2,232.2L72.6,238.5L73.2,241.5L72,243L72.8,245.3L71.6,247.4L69.8,247.8L69.7,250.4L68.4,253.7L70,258.4L70.8,258L72.1,260.4L40.7,258.9L39.7,255.9L40.3,250.8L41.6,231.6L42.2,216L40.4,214.6L40.2,212.2L37.6,212.1L36.5,215.1L35.2,213.9L36.3,208.7L38.6,204.4L37,201.7L37.7,198.8L36.4,195.7L36.7,191L35.5,189.8L37.4,182.2L40.1,179.3L40.7,177.7L39.8,172.5L41.5,168.9L41.1,165.7L38.6,161.7L38.1,158.4L39,152.9L40.4,150.4L38.7,147.7L40.3,143.5Z"},{"id":"RI","d":"M121.5,316.4L124.1,317.2L124.6,325.8L121.7,327.9L120.8,323.3L121.1,320.4L119.7,319.4L120,326.6L117.6,326.5L117.3,328.1L115.9,328.5L115.7,326L118,321.6L119.1,318.5ZM114.8,317.2L115.6,316.9L117.1,319.2L116.4,319.6ZM113.4,327.8L114.3,325.5L113.7,324.5L114.4,321.9L115,322.8L115,326.6ZM105,343.8L106.6,340.2L107.3,340.8L107.4,344.3ZM95.1,335.3L96.3,334L95.8,330.5L97.6,330.1L98,320.6L98.1,313.8L97.7,298.8L114.1,298.2L114.1,304.9L115.8,304.6L115.5,308.3L116.3,310.9L119,312.4L120.4,314.5L120,316.6L118,318.5L117.1,316.6L117.7,315L115,312.5L113.8,310.7L114.6,316.6L111.4,315.8L113.1,317.6L113.3,321L111.6,321.5L112.7,323.9L112.7,327.2L111.3,329.2L110.1,332.6L108.4,332.3L104.6,333.1L100.7,334.7L95.3,336Z"}],"pts":{"vt":[64.5,168],"nh":[121.5,185.3],"me":[229.8,179],"ma":[133.1,271.5]},"labels":{"ME":[194,120.2],"MA":[98,285.7],"CT":[60.8,319],"NH":[106.4,210],"VT":[65,189],"RI":[107.4,316.5]}};
 
 const DIFFS={
   relaxed:{name:'Relaxed',desc:'Two minutes of daylight, softer wind, fewer leaves falling, more acorns.',secs:120,wind:0.65,gustGap:1.4,fall:0.6,power:1.4,pine:0.5},
@@ -273,12 +273,23 @@ const LEVELS={
       {id:'scarf',e:'🧣',name:'Striped scarf',fact:'Snow has fallen on Mount Washington in every month of the year.'},
       {id:'map',e:'🗺️',name:'Presidential Range trail map',fact:'The range’s peaks are named for presidents: Washington, Adams, Jefferson, Madison, Monroe and more.'},
       {id:'nhq',e:'🪙',name:'2000 New Hampshire quarter',fact:'It shows the Old Man of the Mountain, a granite profile that collapsed in 2003.'},
-      {id:'cup',e:'☕',name:'Thermos cup',fact:'The Mount Washington Observatory has kept weather records on the summit since 1932.'}]}
+      {id:'cup',e:'☕',name:'Thermos cup',fact:'The Mount Washington Observatory has kept weather records on the summit since 1932.'}]},
+  me:{id:'me',town:'Bass Harbor',state:'Maine',lat:44.2219,lon:-68.3373,
+    desc:'A lawn in the woods of Acadia on Mount Desert Island. Two trees’ worth of leaves, fog banks rolling in off the water, and a lighthouse beam that cuts through them.',
+    wind:1.1,gustEvery:[9,15],snow:false,fog:true,trees:2,leafMul:1.45,
+    leafWeights:[0.15,0.15,0.12,0.2,0.28,0.1],
+    tree:['#c9a227','#e0b93a','#b5341b','#d9692a','#a8782a'],treeDark:'#6e5216',
+    facts:['Acadia became the first national park east of the Mississippi in 1919, three years after it was set aside as a national monument.',
+      'A 1947 fire burned much of the island’s east side. The birches and aspens that grew back give it extra yellow every fall.',
+      'For much of fall and winter, Cadillac Mountain is the first place in the US to see the sunrise.'],
+    finds:[{id:'bib',e:'🦞',name:'Lobster bib',fact:'Maine lands far more lobster than any other state.'},
+      {id:'compass',e:'🧭',name:'Pocket compass',fact:'Bass Harbor Head Light has marked the entrance to Bass Harbor since 1858.'},
+      {id:'berries',e:'🫐',name:'Pint of wild blueberries',fact:'Maine grows nearly all of the wild blueberries harvested in the US.'},
+      {id:'meq',e:'🪙',name:'2003 Maine quarter',fact:'It shows Pemaquid Point Light and a schooner under sail.'},
+      {id:'pack',e:'🎒',name:'Daypack',fact:'John D. Rockefeller Jr. paid for Acadia’s 45 miles of carriage roads, built between 1913 and 1940.'}]}
 };
 const PLACES=[
-  {id:'vt'},{id:'nh'},
-  {id:'me',town:'Bar Harbor',state:'Maine',soon:'Fog rolls in off Frenchman Bay, gulls raid the tarp, and a lighthouse beam sweeps the lawn.',
-    facts:['For much of fall and winter, Cadillac Mountain in Acadia National Park is the first place in the US to see the sunrise.']},
+  {id:'vt'},{id:'nh'},{id:'me'},
   {id:'ma',town:'Salem',state:'Massachusetts',soon:'October in the Witch City, with trick-or-treaters who can’t resist a leaf pile.',
     facts:['Salem’s Haunted Happenings festival runs through the whole month of October.']}
 ].map(p=>LEVELS[p.id]?{...LEVELS[p.id],level:true}:p);
@@ -308,7 +319,7 @@ function sunTimes(now,lat,lon){
 let selected=LEVELS[store.opts.last]?store.opts.last:'vt', mapSel=selected;
 let LV=LEVELS[selected], D=DIFFS[store.opts.diff]||DIFFS.standard;
 let W=0,H=0,DPR=1,K=1,SAFE_B=0,MINX=0,MAXX=0,MINY=0,MAXY=0;
-let tarp={x:0,y:0,w:0,h:0}, tp={x:0,y:0,w:0,h:0}, tarpScale=1, bag={x:0,y:0}, tree={x:0,y:0,r:0}, blobs=[];
+let tarp={x:0,y:0,w:0,h:0}, tp={x:0,y:0,w:0,h:0}, tarpScale=1, bag={x:0,y:0}, tree={x:0,y:0,r:0}, trees=[];
 let leaves=[], state='title', elapsed=0, playT=0, bagged=0, fell=0, N0=300, spawnAcc=0, groundLeft=0;
 let score=0, pileBonus=0, dayBonus=0, findBonus=0, bestPile=0, dump={n:0,last:0}, endedEarly=false, endClock=0;
 let items=[], popups=[], flakes=[], pickups=[], active={}, nextPower=10;
@@ -355,17 +366,25 @@ function newLeaf(x,y,falling,si){
     rest:0,restT:0.25+Math.random()*0.4,bt:0,lift:0.6+Math.random()*0.8,b:0,d:Math.random()};
 }
 const inTarp=(x,y,m)=>x>tp.x-m&&x<tp.x+tp.w+m&&y>tp.y-m&&y<tp.y+tp.h+m;
-const inCanopy=(x,y)=>Math.hypot(x-tree.x,y-tree.y)<tree.r*0.95;
+const inCanopy=(x,y)=>trees.some(t=>Math.hypot(x-t.x,y-t.y)<t.r*0.95);
 function popup(text,x,y,big){popups.push({text,x,y,t:0,big:!!big});}
 const rakeHalf=()=>34*K*(active.R?1.9:1)*(active.P?0.55:1);
 
-function makeBlobs(){
-  blobs=[];
-  for(let i=0;i<18;i++){
-    const a=-0.3+Math.random()*2.2, rr=tree.r*(0.15+Math.random()*0.7);
-    blobs.push({x:Math.cos(a)*rr,y:Math.sin(a)*rr,r:tree.r*(0.22+Math.random()*0.2),c:LV.tree[i%LV.tree.length]});
+// Trees overhang the left edge; each drops leaves across its own arc (a0..a1) of the lawn.
+function placeTrees(){
+  const m=Math.min(W,H);
+  trees=[{x:-m*0.06,y:-m*0.04,r:m*0.32,a0:0,a1:Math.PI/2}];
+  if((LV.trees||1)>1) trees.push({x:-m*0.1,y:MINY+(MAXY-MINY)*0.52,r:m*0.24,a0:-1.1,a1:1.1});
+  tree=trees[0];
+  for(const t of trees){
+    t.blobs=[];
+    for(let i=0;i<18;i++){
+      const a=t.a0-0.3+Math.random()*(t.a1-t.a0+0.6), rr=t.r*(0.15+Math.random()*0.7);
+      t.blobs.push({x:Math.cos(a)*rr,y:Math.sin(a)*rr,r:t.r*(0.22+Math.random()*0.2),c:LV.tree[i%LV.tree.length]});
+    }
   }
 }
+const pickTree=()=>trees[(Math.random()*trees.length)|0];
 
 function placeTarp(){
   const cx=tarp.x+tarp.w/2, bottom=tarp.y+tarp.h;
@@ -387,9 +406,8 @@ function layout(){
   tarp={w:tw,h:th,x:(W-tw)/2-18*K,y:H-th-SAFE_B-24};
   placeTarp();
   bag={x:tarp.x+tarp.w+30*K,y:tarp.y+tarp.h*0.55};
-  tree={x:-m*0.06,y:-m*0.04,r:m*0.32};
-  makeBlobs();
-  paintGrass();
+  placeTrees();
+  paintGrass(); paintFog();
   scrape.width=snow.width=cv.width; scrape.height=snow.height=cv.height;
   for(const l of leaves){l.x=clamp(l.x,MINX,MAXX); l.y=clamp(l.y,MINY,MAXY);}
   gw=Math.ceil(W/CELL)+1;
@@ -426,7 +444,7 @@ function lawnSpot(margin){
 
 function reset(){
   LV=LEVELS[selected]; D=DIFFS[store.opts.diff]||DIFFS.standard;
-  makeBlobs();
+  placeTrees(); hornAt=-1;
   sun=sunTimes(new Date(),LV.lat,LV.lon);
   T1=sun.dusk; T0=sun.sunset-LEAD_MIN*6e4; pSun=(sun.sunset-T0)/(T1-T0);
   LKEYS=LV.snow
@@ -437,11 +455,14 @@ function reset(){
   pickups=[]; active={}; nextPower=10; tarpScale=1; placeTarp();
   $('chips').innerHTML=''; chipKey='';
   gust=null; nextGust=LV.gustEvery[0]+3; env=0; wx=wy=0; drag=false; lastCarried=0;
-  N0=Math.round(clamp(W*H/1100,220,650));
+  N0=Math.round(clamp(W*H/420,560,1400)*(LV.leafMul||1));
   let guard=0;
   while(leaves.length<N0&&guard++<20000){
     let x,y;
-    if(Math.random()<0.6){x=tree.x+tree.r*1.1+gauss()*W*0.25; y=tree.y+tree.r*1.0+gauss()*H*0.22;}
+    if(Math.random()<0.6){
+      const t=pickTree(), am=(t.a0+t.a1)/2;
+      x=t.x+Math.cos(am)*t.r*1.5+gauss()*W*0.25; y=t.y+Math.sin(am)*t.r*1.5+gauss()*H*0.22;
+    }
     else{x=Math.random()*W; y=Math.random()*H;}
     if(x<MINX||x>MAXX||y<MINY+4||y>MAXY||inTarp(x,y,16)||inCanopy(x,y)) continue;
     leaves.push(newLeaf(x,y,false));
@@ -538,8 +559,8 @@ function update(dt){
     spawnAcc+=dt*(N0/300)*(0.3+0.9*p)*D.fall;
     while(spawnAcc>=1){
       spawnAcc--;
-      const a=Math.random()*Math.PI/2, rr=tree.r*(0.85+Math.random()*1.1);
-      leaves.push(newLeaf(clamp(tree.x+Math.cos(a)*rr,MINX,MAXX),clamp(tree.y+Math.sin(a)*rr,MINY,MAXY),true));
+      const t=pickTree(), a=t.a0+Math.random()*(t.a1-t.a0), rr=t.r*(0.85+Math.random()*1.1);
+      leaves.push(newLeaf(clamp(t.x+Math.cos(a)*rr,MINX,MAXX),clamp(t.y+Math.sin(a)*rr,MINY,MAXY),true));
       fell++;
     }
   }
@@ -607,6 +628,9 @@ function update(dt){
         const across=-lx*dy+ly*dx;
         if(Math.abs(across)>HALF) continue;
         if(l.b>0.5){l.b=0; l.vx=vx*0.12; l.vy=vy*0.12; continue;}
+        // Past a couple dozen leaves the load starts slipping under the tines; a slipped leaf stays behind for a moment.
+        if(l.slip>playT) continue;
+        if(lc>20&&Math.random()<(lc-20)/80){l.slip=playT+0.5; continue;}
         carried++;
         const tgt=(3+l.d*(9+lc*0.22))*K;
         if(along<tgt){l.x+=dx*(tgt-along); l.y+=dy*(tgt-along);}
@@ -692,6 +716,10 @@ function updateChips(p){
   const list=[];
   if(!gust&&playT>=nextGust-1.6) list.push(['','Gust incoming']);
   else if(LV.snow&&p>0.12&&p<0.2) list.push(['','Snow moving in']);
+  else if(LV.fog){
+    const i=FOG_BANKS.findIndex(([c,w])=>p>c-w-0.05&&p<c-w*0.4);
+    if(i>=0){list.push(['','Fog rolling in']); if(hornAt!==i){hornAt=i; foghorn();}}
+  }
   for(const k of 'STRP') if(active[k]) list.push([POWERS[k].good?'good':'bad',`${POWERS[k].name} ${Math.ceil(active[k])}`]);
   const key=list.map(c=>c.join(':')).join('|');
   if(key===chipKey) return;
@@ -782,13 +810,79 @@ function drawShadow(p){
 }
 
 function drawCanopy(){
-  ctx.save(); ctx.translate(tree.x,tree.y);
-  ctx.fillStyle=LV.treeDark; ctx.beginPath(); ctx.arc(0,0,tree.r*0.9,0,6.283); ctx.fill();
-  for(const b of blobs){ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.283); ctx.fill();}
-  if(snowAmt>0){
-    ctx.globalAlpha=0.55*snowAmt; ctx.fillStyle='#f4f7ff';
-    for(const b of blobs){ctx.beginPath(); ctx.arc(b.x-b.r*0.25,b.y-b.r*0.3,b.r*0.55,0,6.283); ctx.fill();}
+  for(const t of trees){
+    ctx.save(); ctx.translate(t.x,t.y);
+    ctx.fillStyle=LV.treeDark; ctx.beginPath(); ctx.arc(0,0,t.r*0.9,0,6.283); ctx.fill();
+    for(const b of t.blobs){ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.283); ctx.fill();}
+    if(snowAmt>0){
+      ctx.globalAlpha=0.55*snowAmt; ctx.fillStyle='#f4f7ff';
+      for(const b of t.blobs){ctx.beginPath(); ctx.arc(b.x-b.r*0.25,b.y-b.r*0.3,b.r*0.55,0,6.283); ctx.fill();}
+    }
+    ctx.restore();
   }
+}
+
+// Fog: two drifting layers of soft blobs at half resolution, with the lighthouse beam cut out of them.
+const fogTex=document.createElement('canvas'), fctx=fogTex.getContext('2d');
+const fogWork=document.createElement('canvas'), wctx=fogWork.getContext('2d');
+let fogAmt=0, hornAt=-1;
+const FOG_BANKS=[[0.36,0.13],[0.74,0.15]];
+const bump=(p,c,w)=>smooth(1-Math.abs(p-c)/w);
+const fogAt=p=>LV.fog?Math.min(0.9,0.15*smooth(p/0.1)+0.7*bump(p,...FOG_BANKS[0])+0.75*bump(p,...FOG_BANKS[1])):0;
+const lighthouse=()=>({x:W-14*K,y:MINY+14*K});
+const beamAngle=()=>playT*2*Math.PI/6.5;
+function paintFog(){
+  const fw=Math.ceil(W/2), fh=Math.ceil(H/2);
+  fogTex.width=fogWork.width=fw; fogTex.height=fogWork.height=fh;
+  for(let i=0;i<70;i++){
+    const x=Math.random()*fw, y=Math.random()*fh, r=40+Math.random()*90;
+    for(const ox of [-fw,0,fw]) for(const oy of [-fh,0,fh]){
+      const cx=x+ox, cy=y+oy;
+      if(cx+r<0||cx-r>fw||cy+r<0||cy-r>fh) continue;
+      const g=fctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0,'rgba(228,233,238,0.5)'); g.addColorStop(1,'rgba(228,233,238,0)');
+      fctx.fillStyle=g; fctx.fillRect(cx-r,cy-r,2*r,2*r);
+    }
+  }
+}
+function beamPath(c,scale,len,spread){
+  const L=lighthouse(), a=beamAngle();
+  c.beginPath(); c.moveTo(L.x*scale,L.y*scale);
+  c.lineTo((L.x+Math.cos(a-spread)*len)*scale,(L.y+Math.sin(a-spread)*len)*scale);
+  c.lineTo((L.x+Math.cos(a+spread)*len)*scale,(L.y+Math.sin(a+spread)*len)*scale);
+  c.closePath();
+}
+function drawFog(){
+  if(fogAmt<=0.01) return;
+  const fw=fogWork.width, fh=fogWork.height;
+  wctx.setTransform(1,0,0,1,0,0);
+  wctx.globalCompositeOperation='source-over'; wctx.clearRect(0,0,fw,fh);
+  wctx.fillStyle='rgba(225,230,236,0.45)'; wctx.fillRect(0,0,fw,fh);
+  const o1=((playT*7)%fw+fw)%fw, o2=((-playT*4)%fw+fw)%fw, oy=fh*0.37;
+  for(const ox of [o1-fw,o1]) wctx.drawImage(fogTex,ox,0);
+  for(const ox of [o2-fw,o2]) for(const y of [oy-fh,oy]) wctx.drawImage(fogTex,ox,y);
+  wctx.globalCompositeOperation='destination-out';
+  wctx.fillStyle='rgba(0,0,0,0.85)';
+  beamPath(wctx,0.5,Math.hypot(W,H),0.17); wctx.fill();
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=fogAmt;
+  ctx.drawImage(fogWork,0,0,cv.width,cv.height);
+  ctx.restore();
+}
+function drawLighthouse(){
+  if(!LV.fog) return;
+  const L=lighthouse(), r=12*K;
+  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(L.x+3,L.y+4,r,0,6.283); ctx.fill();
+  ctx.fillStyle='#f3efe6'; ctx.beginPath(); ctx.arc(L.x,L.y,r,0,6.283); ctx.fill();
+  ctx.fillStyle='#b8322a'; ctx.beginPath(); ctx.arc(L.x,L.y,r*0.62,0,6.283); ctx.fill();
+  ctx.fillStyle='#ffe9a8'; ctx.beginPath(); ctx.arc(L.x,L.y,r*0.3,0,6.283); ctx.fill();
+}
+function drawBeamGlow(){
+  if(!LV.fog) return;
+  const L=lighthouse(), len=Math.hypot(W,H);
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  const g=ctx.createRadialGradient(L.x,L.y,0,L.x,L.y,len*0.8);
+  g.addColorStop(0,'rgba(255,236,190,0.35)'); g.addColorStop(1,'rgba(255,236,190,0)');
+  ctx.fillStyle=g; beamPath(ctx,1,len,0.17); ctx.fill();
   ctx.restore();
 }
 
@@ -878,7 +972,8 @@ function draw(){
   for(const l of leaves) if(l.st===1){ctx.beginPath(); ctx.ellipse(l.x+l.z*26*K,l.y+l.z*34*K,5*K,3*K,0,0,6.283); ctx.fill();}
   for(const l of leaves) if(l.st===1) drawLeaf(l,1+l.z*0.9);
   ctx.globalAlpha=1; ctx.setTransform(DPR,0,0,DPR,0,0);
-  drawPickups(); drawCanopy(); drawFlakes(); drawRake(); drawWind(); drawLight(p); drawPopups();
+  fogAmt=fogAt(p);
+  drawPickups(); drawCanopy(); drawFlakes(); drawFog(); drawLighthouse(); drawRake(); drawWind(); drawLight(p); drawBeamGlow(); drawPopups();
 
   $('clock').textContent=fmtTime.format(state==='over'?endClock:T0+(T1-T0)*p);
   $('sunfill').style.width=(p*100)+'%';
@@ -1058,6 +1153,15 @@ function chime(good){
     g.gain.setValueAtTime(0,t+i*0.09); g.gain.linearRampToValueAtTime(0.18,t+i*0.09+0.01); g.gain.exponentialRampToValueAtTime(0.001,t+i*0.09+0.35);
     o.connect(g).connect(ac.destination); o.start(t+i*0.09); o.stop(t+i*0.09+0.4);
   });
+}
+
+function foghorn(){
+  if(!ac||store.opts.muted) return;
+  const t=ac.currentTime, f=ac.createBiquadFilter(), g=ac.createGain();
+  f.type='lowpass'; f.frequency.value=400;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.16,t+0.25); g.gain.setValueAtTime(0.16,t+1.6); g.gain.exponentialRampToValueAtTime(0.001,t+2.6);
+  f.connect(g).connect(ac.destination);
+  for(const hz of [98,123]){const o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=hz; o.connect(f); o.start(t); o.stop(t+2.7);}
 }
 
 // ---------- Input
