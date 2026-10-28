@@ -26,16 +26,27 @@ Polish: screen shake, leaf crunch sounds, vibration on Android, and sixteen achi
 
 Scoring: 10 points per leaf, pile multipliers (x2/x3/x5) for bagging a big pile at once, a daylight bonus for clearing early, 250 per hidden find. Stars at 50/75/90% cleared, or 3 for clearing early. Acorns give power-ups (T big tarp, R wide rake, S sun stop); pinecones shrink the rake. Difficulty (Relaxed/Standard/Hard) is in Options. Best scores per lawn and difficulty, the finds album, and an interrupted round (Continue) are saved in localStorage. The map outlines come from the us-atlas Census data, projected with d3-geo.
 
-`rake-before-dark.html` is written as a Claude artifact page (no doctype/head; the host adds them) and is published at https://claude.ai/artifact/Rhf4L2N8WJHVrrma3C23en. It also opens directly in a browser.
-
-## Web app
-
-Hosted with GitHub Pages from `main` at https://ian2j.github.io/rake-before-dark/. Open it on a phone and use Add to Home Screen to install it; it then runs full-screen and offline.
-
-After editing `rake-before-dark.html`, rebuild and commit the generated files:
+## Development
 
 ```bash
-python3 build.py
+npm install
 ```
 
-`build.py` writes `index.html` (full page with manifest, icons and service worker registration) and `sw.js` (offline cache, versioned by a hash of the page). `tools/make_icons.py` regenerates `icons/`.
+```bash
+npm run dev
+```
+
+`npm test` runs the Vitest suite: content checks, saved-progress migration, and scripted rounds in every town (a scripted player rakes, throws bags at the storm and the moose, builds the snowman, and plays bag toss). Randomness is seeded in tests, so runs are repeatable.
+
+`npm run build` writes the installable web app to `dist/` (with a generated offline service worker). `npm run build:artifact` writes a single self-contained page to `dist-artifact/rake-before-dark.html` for the Claude artifact at https://claude.ai/artifact/Rhf4L2N8WJHVrrma3C23en.
+
+Pushing to `main` runs the tests and, if they pass, deploys to https://ian2j.github.io/rake-before-dark/ through GitHub Actions.
+
+## Layout
+
+- `index.html` and `src/styles.css`: the page and its menus.
+- `src/data/`: content (towns, weeks, finds, facts, shop items, achievements) and the map outlines.
+- `src/lib/`: helpers and the sunrise equation.
+- `src/game/`: the game, one module per area (round, lawn, drawing, each hazard, the storm, the ending, menus, audio, input). Shared mutable state lives on `G` in `src/game/state.js`; `boot.js` starts everything.
+- `public/`: web-app manifest and icons (`tools/make_icons.py` redraws the icons).
+- `tests/`: the Vitest suite.

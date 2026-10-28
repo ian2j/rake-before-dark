@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-OUT = Path(__file__).resolve().parent.parent / "icons"
+OUT = Path(__file__).resolve().parent.parent / "public" / "icons"
 S = 1024
 
 
