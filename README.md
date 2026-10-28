@@ -18,7 +18,11 @@ The daily lawn picks one town and weekday per date and lays the lawn out from a 
 
 Three stars on all 30 days unlocks Stowe by moonlight (rake by the light of a lantern on your rake) and a moonlit silver rake handle.
 
-Polish: screen shake, leaf crunch sounds, vibration on Android, and fifteen achievements shown in the shed.
+Leaf vacuum (shed, 800 leaves; free on Relaxed): switch tools at the top of the screen, then hold your finger down to pull leaves in, about ten a second, without pile bonuses.
+
+Bag toss: a fall-fair cornhole mini-game from the main menu. Flick bags at rings (10/25/50, double in the bull's-eye) and a moving pumpkin cart (100); flick strength sets distance, wind drifts the bag. A minute per game; a quarter of the score goes to the shed.
+
+Polish: screen shake, leaf crunch sounds, vibration on Android, and sixteen achievements shown in the shed.
 
 Scoring: 10 points per leaf, pile multipliers (x2/x3/x5) for bagging a big pile at once, a daylight bonus for clearing early, 250 per hidden find. Stars at 50/75/90% cleared, or 3 for clearing early. Acorns give power-ups (T big tarp, R wide rake, S sun stop); pinecones shrink the rake. Difficulty (Relaxed/Standard/Hard) is in Options. Best scores per lawn and difficulty, the finds album, and an interrupted round (Continue) are saved in localStorage. The map outlines come from the us-atlas Census data, projected with d3-geo.
 

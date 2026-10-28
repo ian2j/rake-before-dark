@@ -15,7 +15,7 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 [hidden]{display:none!important}
 #safe{position:fixed;bottom:0;left:0;width:0;height:env(safe-area-inset-bottom,0px);pointer-events:none}
 
-.hud{position:fixed;top:0;left:0;right:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:14px;
+.hud{position:fixed;top:0;left:0;right:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:12px;
   padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:22px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   background:linear-gradient(rgba(28,21,48,.82),rgba(28,21,48,0));pointer-events:none}
@@ -27,6 +27,8 @@ html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;backgrou
 .sunbar .mark{position:absolute;top:-5px;width:2px;height:16px;background:var(--paper);opacity:.75}
 .sunbar .mark::after{content:"sunset";position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:.65rem;letter-spacing:.06em;color:var(--muted)}
 .count{text-align:right}
+#toolBtn,#tossQuit{pointer-events:auto;font:600 .8rem var(--body);color:#1c1530;background:var(--gold);border:0;border-radius:999px;padding:.45rem .8rem;cursor:pointer}
+#tossQuit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:max(16px,env(safe-area-inset-right,0px));color:var(--paper);background:rgba(28,21,48,.6);border:1px solid var(--line)}
 #pauseBtn{pointer-events:auto;font:600 .8rem var(--body);color:var(--paper);background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:999px;padding:.45rem .8rem;cursor:pointer}
 button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 
@@ -186,10 +188,12 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
   <div class="clock"><b id="clock">5:09 PM</b><small id="sunlabel">Sunset 5:49 · Dusk 6:19</small></div>
   <div class="sunbar"><div class="fill" id="sunfill"></div><i class="mark" id="sunmark"></i></div>
   <div class="count"><b id="score">0</b><small id="clear">0% clear</small></div>
+  <button id="toolBtn" type="button" hidden>Rake</button>
   <button id="pauseBtn" type="button">Pause</button>
 </div>
 <div class="chips" id="chips"></div>
 <div class="toast" id="toast" role="status" hidden></div>
+<button id="tossQuit" type="button" hidden>Quit</button>
 
 <div class="overlay" id="title">
   <div class="card">
@@ -200,6 +204,7 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
       <button class="primary" id="playBtn" type="button">Play</button>
       <button class="secondary" id="dailyBtn" type="button">Daily lawn<small id="dailyInfo"></small></button>
       <button class="secondary" id="contBtn" type="button" hidden>Continue<small id="contInfo"></small></button>
+      <button class="secondary" id="tossBtn" type="button">Bag toss<small id="tossInfo"></small></button>
       <button class="secondary" id="shedBtn" type="button">Shed<small id="shedInfo"></small></button>
       <button class="secondary" id="optBtn" type="button">Options</button>
     </div>
@@ -208,11 +213,12 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
       <ul>
         <li>Drag across the lawn to rake. Leaves that settle on the blue tarp go in the bag.</li>
         <li>Dump a big pile on the tarp at once for a ×2, ×3 or ×5 multiplier.</li>
-        <li>Clear the lawn before civil dusk. Daylight you have left scores a bonus.</li>
+        <li>Clear the lawn before civil dusk. When only a handful of leaves are left (a chip counts them down), the lawn counts as clean, the evening ends early, and the daylight you have left scores a bonus.</li>
         <li>Rake over acorns for power-ups: <b>T</b> big tarp, <b>R</b> wide rake, <b>S</b> sun stop. Pinecones are sticky with pitch and shrink your rake.</li>
         <li>Things are hidden under the leaves. Each one you find goes on the shelf in your shed.</li>
         <li>Each town is a five-day week, and every day gets harder. Earn a star to unlock the next day.</li>
         <li>Every leaf you bag goes to the shed, where you can spend leaves on upgrades.</li>
+        <li>Tired fingers? The leaf vacuum (in the shed, free on Relaxed) lets you hold your finger still and pull leaves in. Switch tools with the button at the top.</li>
         <li>The daily lawn is the same for everyone each day. Come back tomorrow for a new one.</li>
       </ul>
     </details>
@@ -292,6 +298,7 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
     <div class="cardhead"><button class="back" id="shedBack" type="button">Menu</button><p class="eyebrow" id="lifetime">0 raked all time</p></div>
     <div><h2>The shed</h2><p class="bank"><b id="bank">0</b> leaves to spend</p></div>
     <section class="shedsec"><p class="label">Upgrades</p><div class="ups" id="ups"></div></section>
+    <section class="shedsec"><p class="label">Tools</p><div class="ups" id="tools"></div></section>
     <section class="shedsec"><p class="label">Tarp</p><div class="swatches" id="tarps"></div></section>
     <section class="shedsec"><p class="label">Rake handle</p><div class="swatches" id="rakes"></div></section>
     <section class="shedsec"><p class="label">Compost heap</p><div class="meter"><i id="compostFill"></i></div><ul class="milestones" id="milestones"></ul></section>
@@ -361,11 +368,11 @@ const DAY_DESC={
 };
 function dayParams(lv,d){
   const i=d-1, P={leafMul:1+0.08*i,fall:1+0.1*i,wind:1+0.06*i,gustGap:1-0.05*i,trees:lv.trees||1,
-    snowStart:0.15,snowRate:1,fogBase:0.15,fogPeak:0.72,fogBanks:[[0.36,0.13],[0.74,0.15]],beamPeriod:6.5,
+    snowStart:0.15,snowRate:1,fogBase:0.15,fogPeak:0.72,fogBanks:[[0.22,0.12],[0.62,0.15]],beamPeriod:6.5,
     kidStart:0.12,kidGap:1,walls:1,breeze:60,cliff:0,rival:d===4&&!lv.boss};
   if(lv.id==='vt'){if(d>=3) P.trees=2; if(d===5){P.wind*=1.35; P.gustGap*=0.75;}}
   if(lv.id==='nh'){P.snowStart=0.15-0.035*i; P.snowRate=1+0.3*i;}
-  if(lv.id==='me'){P.fogBase=0.15+0.07*i; P.fogPeak=0.72+0.04*i; P.beamPeriod=6.5+0.8*i; if(d>=4) P.fogBanks=[[0.28,0.12],[0.56,0.12],[0.82,0.14]];}
+  if(lv.id==='me'){P.fogBase=0.15+0.07*i; P.fogPeak=0.72+0.04*i; P.beamPeriod=6.5+0.8*i; if(d>=4) P.fogBanks=[[0.17,0.1],[0.44,0.12],[0.74,0.14]];}
   if(lv.id==='ma'){P.kidStart=Math.max(0.02,0.12-0.025*i); P.kidGap=1-0.13*i;}
   if(lv.id==='ct') P.walls=[1,4,3,2,5][i];
   if(lv.id==='ri'){P.breeze=55+12*i; P.cliff=10*i;}
@@ -964,7 +971,8 @@ function update(dt){
 
   if(walls.length) for(const l of leaves){l.px=l.x; l.py=l.y;}
   carried=0; rakeSpeed*=Math.exp(-10*dt);
-  if(drag){
+  if(drag&&vacOn()){vacuum(dt); px=rx; py=ry;}
+  else if(drag){
     const sx=rx-px, sy=ry-py, len=Math.hypot(sx,sy);
     if(len>0.5){
       const dx=sx/len, dy=sy/len;
@@ -1001,9 +1009,9 @@ function update(dt){
     if(l.st===2){
       l.bt+=dt*2.2;
       const k=Math.min(1,dt*7);
-      const tx=l.owner?rival.tarp.x+rival.tarp.w/2:bx, ty=l.owner?rival.tarp.y+rival.tarp.h/2:by;
+      const tx=l.vac?rx:l.owner?rival.tarp.x+rival.tarp.w/2:bx, ty=l.vac?ry:l.owner?rival.tarp.y+rival.tarp.h/2:by;
       l.x+=(tx-l.x)*k; l.y+=(ty-l.y)*k; l.a+=dt*6;
-      if(l.bt>=1){if(l.owner) rivalBagged++; else{bagged++; if(TH) thBagged();} leaves[i]=leaves[leaves.length-1]; leaves.pop();}
+      if(l.bt>=(l.vac?0.45:1)){if(l.owner) rivalBagged++; else{bagged++; if(l.vac) score+=LEAF_PTS; if(TH) thBagged();} leaves[i]=leaves[leaves.length-1]; leaves.pop();}
       continue;
     }
     // Leaves in a dense pile shelter each other from wind and drag on each other, so piles settle fast.
@@ -1104,7 +1112,7 @@ function updateKids(dt,p){
 const lanterns=()=>[[MINX+14*K,MAXY-16*K],[MAXX-14*K,MINY+(MAXY-MINY)*0.45]];
 function drawLanterns(p){
   if(!LV.kids) return;
-  const lit=smooth((p-pSun+0.05)/0.1);
+  const lit=Math.max(0.6,smooth((p-pSun+0.05)/0.1));
   for(const [x,y] of lanterns()){
     const r=11*K;
     ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x+3,y+4,r*1.1,r*0.9,0,0,6.283); ctx.fill();
@@ -1130,7 +1138,8 @@ function drawKids(){
   }
 }
 function drawHalloweenLight(q){
-  if(!LV.kids||q<=0) return;
+  if(!LV.kids) return;
+  q=Math.max(q,0.55);
   ctx.globalCompositeOperation='lighter';
   const glow=(x,y,r,a)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(255,170,70,${a})`); g.addColorStop(1,'rgba(255,170,70,0)'); ctx.fillStyle=g; ctx.fillRect(x-r,y-r,2*r,2*r);};
   for(const [x,y] of lanterns()) glow(x,y,70*K,0.3*q);
@@ -1232,6 +1241,10 @@ function updateChips(p){
   else if(LV.fog){
     const i=DP.fogBanks.findIndex(([c,w])=>p>c-w-0.05&&p<c-w*0.4);
     if(i>=0){list.push(['','Fog rolling in']); if(hornAt!==i){hornAt=i; foghorn();}}
+  }
+  if(!LV.boss&&state==='play'){
+    const thr=Math.max(4,Math.round(N0*0.02));
+    if(groundLeft<=thr+30&&groundLeft>thr) list.push(['good',`${groundLeft-thr} leaves to a clean lawn`]);
   }
   if(moose&&moose.mode!=='gone') list.push([moose.mode==='charge'?'bad':'',moose.mode==='charge'?'The moose is charging the tarp!':moose.mode==='away'||moose.mode==='flee'?'The moose ran off. He’ll be back':`Moose: ${moose.hp} hits to go`]);
   if(rival) list.push([bagged>=rivalBagged?'good':'bad',`You ${bagged} · Dale ${rivalBagged}`]);
@@ -1419,6 +1432,7 @@ function drawFlakes(){
 
 function drawRake(){
   if(state!=='play'||!showRake) return;
+  if(vacOn()) return drawVacuum();
   drawRakeAt(rx,ry,rdx,rdy,rakeHalf(),(RAKES[store.cos.rake]||RAKES.ash).c,drag?1:0.5,active.P);
 }
 function drawRakeAt(x,y,dx,dy,HALF,handle,alpha,sticky){
@@ -1523,7 +1537,7 @@ function finish(early){
   // Leaves already on the tarp go in the bag.
   for(const l of leaves){
     if(l.st===2&&l.owner||rival&&l.st===0&&inRivalTarp(l.x,l.y,-4)){rivalBagged++; l.gone=true;}
-    else if(l.st===2||(l.st===0&&inTarp(l.x,l.y,-4))){if(l.st===0) dump.n++; l.done=true;}
+    else if(l.st===2||(l.st===0&&inTarp(l.x,l.y,-4))){if(l.st===0) dump.n++; if(l.vac) score+=LEAF_PTS; l.done=true;}
   }
   bagged+=leaves.filter(l=>l.done).length;
   leaves=leaves.filter(l=>!l.gone);
@@ -1559,7 +1573,7 @@ function finish(early){
 
   $('verdict').innerHTML=(rival?(beatDale?'You beat Dale':'Dale wins this one'):early?'Lawn clear':pct>=90?'Clean lawn':pct>=70?'Good enough for October':pct>=40?'Half a lawn':'There’s always tomorrow')+(isBest&&score>0?'<span class="best">New best</span>':'');
   $('endtime').textContent=`${LV.town}${LV.special?'':` · ${DAY_NAMES[DAY-1]}`} · `+(LV.night?(early?`${minsLeft} min of moonlight left`:`moonset ${fmtTime.format(T1)}`):early?`beat the sun by ${minsLeft} min`:`civil dusk ${fmtTime.format(T1)}`);
-  $('stars').innerHTML=starText(stars); $('statsRow').hidden=false; $('again').textContent='Rake again';
+  $('stars').innerHTML=starText(stars); $('statsRow').hidden=false; $('again').textContent='Rake again'; $('toMap').textContent='Map';
   $('stars').setAttribute('aria-label',`${stars} of 3 stars`);
   $('rScore').textContent=num(score); $('rPct').textContent=pct+'%'; $('rBags').textContent=Math.ceil(bagged/BAG_SIZE);
   const rows=[[`Leaves bagged (${num(bagged)} × ${LEAF_PTS})`,num(bagged*LEAF_PTS)]];
@@ -1613,7 +1627,8 @@ const ACH={
   million:{name:'Leaf mountain',desc:'Rake 50,000 leaves in all.'},
   moose:{name:'Moose on the loose',desc:'Drive the Greenville moose back into the woods.'},
   daily:{name:'Regular',desc:'Rake the daily lawn three days in a row.'},
-  night:{name:'Night owl',desc:'Get 3 stars raking by moonlight.'}
+  night:{name:'Night owl',desc:'Get 3 stars raking by moonlight.'},
+  toss:{name:'Fair champion',desc:'Score 500 in bag toss.'}
 };
 function stat(k,n=1){store.stats[k]=(store.stats[k]||0)+n; if(k==='shoo'&&store.stats.shoo>=25) award('shoo');}
 function award(id){
@@ -1769,7 +1784,7 @@ function bossLost(){
   $('stars').innerHTML=''; $('statsRow').hidden=true; $('rFinds').innerHTML='';
   $('breakdown').innerHTML=`<dt>Hits on the storm</dt><dd>${BOSS_HP-boss.hp} of ${BOSS_HP}</dd><dt>Leaves bagged</dt><dd>${num(bagged)}</dd>`;
   $('rNote').textContent=`+${num(bagged)} leaves to the shed. Fill bags quickly in the first phase, and aim where the storm is heading.`;
-  $('nextDay').hidden=true; $('again').textContent='Try again'; $('again').className='primary';
+  $('nextDay').hidden=true; $('again').textContent='Try again'; $('again').className='primary'; $('toMap').textContent='Map';
   setTimeout(()=>{if(state==='over'){show('end'); $('again').focus();}},700);
 }
 
@@ -1871,7 +1886,156 @@ function dailyStreak(){
 function beginDaily(){
   initAudio();
   const d=dailyInfo(); DAILY=d; selected=d.id; DAY=d.day;
-  withSeed(d.seed,reset); state='play'; show(null); pushTrap();
+  withSeed(d.seed,reset); state='play'; show(null); pushTrap(); syncTool();
+}
+
+// ---------- The leaf vacuum: hold the nozzle down and leaves within reach are pulled in and bagged, about a dozen a second.
+const VAC_PRICE=800;
+const vacAvailable=()=>store.owned.includes('vacuum')||store.opts.diff==='relaxed';
+const vacOn=()=>store.opts.tool==='vac'&&vacAvailable();
+const vacR=()=>72*K*(1+0.08*U('rake'))*(active.R?1.5:1)*(active.P?0.6:1);
+let suck=0;
+function vacuum(dt){
+  const R=vacR(), r2=R*R;
+  suck=Math.min(3,suck+dt*13);
+  for(const l of leaves){
+    if(l.st!==0) continue;
+    const dx=rx-l.x, dy=ry-l.y, d2=dx*dx+dy*dy;
+    if(d2>r2) continue;
+    const d=Math.sqrt(d2)||1, f=1-d/R;
+    l.vx+=dx/d*2400*K*f*dt; l.vy+=dy/d*2400*K*f*dt; l.va+=(Math.random()-0.5)*12*dt; l.b=Math.max(0,l.b-dt*2);
+    if(d<16*K&&suck>=1){suck--; l.st=2; l.bt=0; l.vac=true;}
+  }
+  for(const it of items) if(!it.raked&&Math.hypot(it.x-rx,it.y-ry)<R) it.raked=true;
+  for(const u of pickups) if(u.z<=0&&!u.got&&Math.hypot(u.x-rx,u.y-ry)<R*0.6) activate(u);
+  for(const k of kids) if(k.st==='seek'&&Math.hypot(k.x-rx,k.y-ry)<R*0.7){k.st='shoo'; score+=50; stat('shoo'); popup('Shoo!  +50',k.x,k.y-24*K,false);}
+  if(LV.snow||LV.boss){nctx.setTransform(DPR,0,0,DPR,0,0); nctx.globalCompositeOperation='destination-out'; nctx.fillStyle='rgba(0,0,0,0.5)'; nctx.beginPath(); nctx.arc(rx,ry,R*0.5,0,6.283); nctx.fill(); nctx.globalCompositeOperation='source-over';}
+  rakeSpeed=drag?400:0; carried=1;
+}
+function drawVacuum(){
+  const R=vacR(), hx=rx+70*K, hy=ry+120*K;
+  ctx.save(); ctx.lineCap='round';
+  if(drag) for(let i=0;i<3;i++){
+    const f=((playT*1.6+i/3)%1), rr=R*(1-f);
+    ctx.strokeStyle=`rgba(255,240,210,${0.35*f})`; ctx.lineWidth=1.5; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.arc(rx,ry,rr,0,6.283); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=7*K; ctx.beginPath(); ctx.moveTo(rx+4,ry+6); ctx.quadraticCurveTo(rx+10*K,hy-30*K,hx+4,hy+6); ctx.stroke();
+  ctx.strokeStyle='#3a3f48'; ctx.lineWidth=6*K; ctx.beginPath(); ctx.moveTo(rx,ry); ctx.quadraticCurveTo(rx+6*K,hy-34*K,hx,hy); ctx.stroke();
+  ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.ellipse(hx+8*K,hy+8*K,16*K,11*K,0.4,0,6.283); ctx.fill();
+  ctx.fillStyle='#2b2f36'; ctx.beginPath(); ctx.ellipse(rx,ry,13*K,9*K,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.ellipse(rx,ry,7*K,4.5*K,0,0,6.283); ctx.fill();
+  ctx.restore();
+}
+
+// ---------- Bag toss at the fair: cornhole with leaf bags. Flick a bag; how hard you flick sets the distance and the wind drifts it.
+// Rings score 10, 25 or 50 (double in the bull's-eye); the pumpkin cart scores 100.
+let TOSS=null;
+const TOSS_SECS=60;
+function startToss(){
+  initAudio(); state='toss'; popups=[]; leaveTrap(); show(null); $('hud').style.visibility='hidden'; $('tossQuit').hidden=false; pushTrap();
+  TOSS={t:0,score:0,throws:0,hits:0,bag:null,fly:[],landed:[],grab:null,wind:0,cart:{x:W*0.3,dir:1},over:false,
+    rings:[[0.28,0.66,34,10],[0.72,0.64,34,10],[0.5,0.47,28,25],[0.27,0.27,22,50],[0.73,0.25,22,50]].map(([x,y,r,pts])=>({x:W*x,y:MINY+(H-MINY)*y*0.92,r:r*K,pts}))};
+  tossNextBag();
+}
+function tossNextBag(){TOSS.bag={x:W/2,y:H-SAFE_B-64*K,hx:W/2,hy:H-SAFE_B-64*K}; TOSS.wind=(Math.random()-0.5)*2;}
+function tossDown(x,y,id){const b=TOSS.bag; if(!b||TOSS.over) return; if(Math.hypot(x-b.x,y-b.y)<60*K) TOSS.grab={id,pts:[[x,y,performance.now()]]};}
+function tossMove(x,y,id){const g=TOSS&&TOSS.grab; if(!g||g.id!==id) return; TOSS.bag.x=x; TOSS.bag.y=y; g.pts.push([x,y,performance.now()]); if(g.pts.length>8) g.pts.shift();}
+function tossUp(id){
+  const g=TOSS&&TOSS.grab; if(!g||g.id!==id) return; TOSS.grab=null;
+  const now=g.pts[g.pts.length-1]; let old=g.pts[0];
+  for(const q of g.pts) if(now[2]-q[2]<=90){old=q; break;}
+  const t=Math.max(16,now[2]-old[2])/1000, vx=(now[0]-old[0])/t, vy=(now[1]-old[1])/t;
+  if(vy<-200) tossThrow(vx,vy); else{TOSS.bag.x=TOSS.bag.hx; TOSS.bag.y=TOSS.bag.hy;}
+}
+function tossThrow(vx,vy){
+  const b=TOSS.bag, sp=Math.hypot(vx,vy)||1, range=clamp(sp*0.28*K,60*K,(H-MINY)*0.85);
+  TOSS.fly.push({x0:b.x,y0:b.y,dx:vx/sp,dy:vy/sp,range,u:0,drift:TOSS.wind*55*K,rot:0});
+  TOSS.throws++; TOSS.bag=null; noiseHit(600,0.6,0.22,0.25);
+  setTimeout(()=>{if(TOSS&&!TOSS.over) tossNextBag();},350);
+}
+function updateToss(dt){
+  const T=TOSS; T.t+=dt; playT+=dt;
+  const c=T.cart; c.x+=c.dir*70*K*dt; if(c.x>W*0.85) c.dir=-1; else if(c.x<W*0.15) c.dir=1;
+  for(const f of T.fly){
+    f.u+=dt/0.75; f.rot+=dt*8;
+    if(f.u>=1){
+      f.done=true;
+      const x=f.x0+f.dx*f.range+f.drift, y=f.y0+f.dy*f.range;
+      const cartY=MINY+(H-MINY)*0.36*0.92+0;
+      let best=0;
+      for(const r of [...T.rings,{x:c.x,y:cartY,r:22*K,pts:100}]){const d=Math.hypot(x-r.x,y-r.y); if(d<r.r) best=Math.max(best,r.pts===100?100:d<r.r*0.4?r.pts*2:r.pts);}
+      T.landed.push({x,y,t:0,rot:f.rot,pts:best});
+      if(best){T.score+=best; T.hits++; popup(`+${best}`,x,y-20*K,best>=50); tones(best>=50?[523,659,784]:[523,659],'triangle',0.08,0.3,0.14); if(best>=50){shake(3); buzz(25);}}
+      else{popup('Miss',x,y-16*K,false); noiseHit(300,0.6,0.15,0.15);}
+    }
+  }
+  T.fly=T.fly.filter(f=>!f.done);
+  for(const l of T.landed) l.t+=dt;
+  T.landed=T.landed.filter(l=>l.t<5);
+  for(const pp of popups) pp.t+=dt;
+  popups=popups.filter(pp=>pp.t<1.8);
+  if(T.t>=TOSS_SECS&&!T.fly.length&&!T.over) endToss(false);
+}
+function endToss(quit){
+  const T=TOSS; if(!T) return;
+  T.over=true; $('tossQuit').hidden=true; leaveTrap();
+  const earned=Math.round(T.score/4), best=T.score>(store.tossBest||0);
+  store.bank+=earned; if(best) store.tossBest=T.score; save();
+  if(T.score>=500) award('toss');
+  if(quit){TOSS=null; return goTitle();}
+  state='over';
+  $('verdict').innerHTML=(T.score>=500?'Blue ribbon':T.score>=250?'Red ribbon':'Thanks for playing the fair')+(best&&T.score>0?'<span class="best">New best</span>':'');
+  $('endtime').textContent='Bag toss at the fall fair';
+  $('stars').innerHTML=''; $('statsRow').hidden=true; $('rFinds').innerHTML='';
+  $('breakdown').innerHTML=`<dt>Score</dt><dd>${num(T.score)}</dd><dt>Bags on target</dt><dd>${T.hits} of ${T.throws}</dd><dt>Leaves to the shed</dt><dd>+${num(earned)}</dd>`;
+  $('rNote').textContent='New England fall fairs run deep: the Topsfield Fair in Massachusetts has been held since 1818.';
+  $('nextDay').hidden=true; $('again').textContent='Toss again'; $('again').className='primary'; $('toMap').textContent='Menu';
+  show('end'); $('again').focus();
+}
+function drawToss(){
+  const T=TOSS;
+  ctx.setTransform(1,0,0,1,0,0); ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1; ctx.drawImage(grass,0,0);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='rgba(255,220,150,0.12)'; ctx.fillRect(0,0,W,H);
+  const flagY=MINY-6;
+  ctx.strokeStyle='#6b4a2b'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(0,flagY); ctx.quadraticCurveTo(W/2,flagY+18*K,W,flagY); ctx.stroke();
+  const fc=['#c0392b','#e5832a','#efb13c','#2f6b46','#2f62a3'];
+  for(let i=0;i<14;i++){const x=W*(i+0.5)/14, y=flagY+18*K*4*(x/W)*(1-x/W); ctx.fillStyle=fc[i%5]; ctx.beginPath(); ctx.moveTo(x-8*K,y); ctx.lineTo(x+8*K,y); ctx.lineTo(x,y+14*K); ctx.fill();}
+  for(const r of T.rings){
+    ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(r.x+3,r.y+5,r.r*1.25,r.r*0.95,0,0,6.283); ctx.fill();
+    ctx.fillStyle='#d9b45a'; ctx.beginPath(); ctx.ellipse(r.x,r.y,r.r*1.25,r.r*0.95,0,0,6.283); ctx.fill();
+    ctx.fillStyle='#f3e1ae'; ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,6.283); ctx.fill();
+    ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.arc(r.x,r.y,r.r*0.4,0,6.283); ctx.fill();
+    ctx.fillStyle='#5a3d22'; ctx.font=`700 ${11*K}px Karla, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(r.pts,r.x,r.y+r.r*0.72);
+  }
+  const cy=MINY+(H-MINY)*0.36*0.92, cx=T.cart.x;
+  ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.fillRect(cx-26*K+3,cy-14*K+5,52*K,28*K);
+  ctx.fillStyle='#8a5a2e'; ctx.fillRect(cx-26*K,cy-14*K,52*K,28*K);
+  ctx.strokeStyle='#5e3a1c'; ctx.lineWidth=2; ctx.strokeRect(cx-26*K,cy-14*K,52*K,28*K);
+  ctx.fillStyle='#e0761f'; ctx.beginPath(); ctx.ellipse(cx,cy,15*K,12*K,0,0,6.283); ctx.fill();
+  ctx.fillStyle='#4a6b2a'; ctx.fillRect(cx-1.5*K,cy-15*K,3*K,5*K);
+  ctx.fillStyle='#fbf1e1'; ctx.font=`700 ${10*K}px Karla, sans-serif`; ctx.textAlign='center'; ctx.fillText('100',cx,cy+22*K);
+  for(const l of T.landed){ctx.globalAlpha=Math.min(1,(5-l.t)/1.5); drawLaunchBag(l.x,l.y,0.8,l.rot); ctx.globalAlpha=1;}
+  const by=H-SAFE_B-64*K;
+  ctx.fillStyle='#d9b45a'; ctx.fillRect(W/2-34*K,by+10*K,68*K,22*K); ctx.strokeStyle='#a8873c'; ctx.strokeRect(W/2-34*K,by+10*K,68*K,22*K);
+  if(T.bag) drawLaunchBag(T.bag.x,T.bag.y,1,0);
+  for(const f of T.fly){
+    const u=f.u, gx=f.x0+f.dx*f.range*u+f.drift*u*u, gy=f.y0+f.dy*f.range*u, z=4*u*(1-u);
+    ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(gx,gy,12*K,6*K,0,0,6.283); ctx.fill();
+    drawLaunchBag(gx,gy-z*70*K,1+z*0.6,f.rot);
+  }
+  drawPopups();
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round'; ctx.lineWidth=4; ctx.strokeStyle='rgba(28,21,48,0.8)';
+  const left=Math.max(0,Math.ceil(TOSS_SECS-T.t)), top=Math.max(18,MINY*0.45);
+  ctx.font=`500 ${18*K}px "DM Mono", monospace`; ctx.fillStyle='#ffd27a';
+  ctx.strokeText(`${num(T.score)}`,W/2,top); ctx.fillText(`${num(T.score)}`,W/2,top);
+  ctx.font=`600 ${13*K}px Karla, sans-serif`; ctx.fillStyle='#fbf1e1';
+  const windTxt=Math.abs(T.wind)<0.08?'Calm':`Wind ${Math.round(Math.abs(T.wind)*12)} mph ${T.wind>0?'→':'←'}`;
+  ctx.strokeText(`${left}s · ${windTxt}`,W/2,top+20*K); ctx.fillText(`${left}s · ${windTxt}`,W/2,top+20*K);
+  if(T.throws===0&&T.bag) {ctx.font=`700 ${14*K}px Karla, sans-serif`; ctx.fillStyle='#ffd27a'; ctx.strokeText('Flick the bag up the field. Harder goes farther.',W/2,by-30*K); ctx.fillText('Flick the bag up the field. Harder goes farther.',W/2,by-30*K);}
+  if(shakeAmt) {}
 }
 
 // ---------- Winter: after the storm, the title, map and shed sit over a snowed-in lawn.
@@ -1958,26 +2122,29 @@ function startSnowman(){
   initAudio(); state='ending'; ending={sub:'snowman',t:0}; show(null); leaveTrap();
   trailC.width=cv.width; trailC.height=cv.height; tctx.setTransform(DPR,0,0,DPR,0,0); tctx.clearRect(0,0,W,H);
   SM={HZ:Math.max(H*0.3,MINY+60),edgeX:W*0.8,stage:'base',balls:[],stack:null,decoT:0,grab:null,slideT:0,pauseT:0,flyT:0,parts:[],thanks:false,t:0,flashT:0,
-    msg:'Drag anywhere to roll the snowball. It picks up snow as it goes.',
+    msg:'Touch and drag: the snowball rolls after your finger and picks up snow as it goes.',
     pines:Array.from({length:8},(_,i)=>({x:W*(i+Math.random()*0.6)/8,h:(26+Math.random()*24)*K}))};
   SM.balls=[{x:W*0.32,y:SM.HZ+(H-SM.HZ)*0.55,r:9*K,roll:0}];
   const [lx,ly]=smSpot(); SM.leaf={x:lx,y:ly,found:!!store.finds.winter};
 }
-function smDown(x,y){if(SM) SM.grab={lx:x,ly:y};}
-function smMove(x,y){
-  const g=SM&&SM.grab;
+// The ball rolls toward wherever your finger is, a little behind it, so it sits under your finger as it grows.
+function smDown(x,y){if(SM) SM.grab={x,y};}
+function smMove(x,y){if(SM&&SM.grab){SM.grab.x=x; SM.grab.y=y;}}
+function smSteer(dt){
+  const g=SM.grab;
   if(!g) return;
-  const dx=x-g.lx, dy=y-g.ly; g.lx=x; g.ly=y;
   if(SM.stage==='base'||SM.stage==='middle'||SM.stage==='head'){
     const b=SM.balls[0];
     if(!b) return;
+    const tx=clamp(g.x,b.r+6,SM.edgeX-b.r*0.6), ty=clamp(g.y+b.r,SM.HZ+b.r*0.5+8,H-8);
+    let dx=tx-b.x, dy=ty-b.y;
+    const dist=Math.hypot(dx,dy), step=Math.min(dist,Math.max(dist*Math.min(1,dt*16),0),1100*K*dt);
+    if(dist<0.3) return;
     const ox=b.x, oy=b.y;
-    b.x=clamp(b.x+dx,b.r+6,SM.edgeX-b.r*0.6); b.y=clamp(b.y+dy,SM.HZ+b.r*0.5+8,H-8);
-    const d=Math.hypot(b.x-ox,b.y-oy);
-    if(d<0.01) return;
+    b.x+=dx/dist*step; b.y+=dy/dist*step;
     const tgt=SM_TARGET[SM.stage]*K;
-    if(b.r<tgt) b.r=Math.min(tgt,Math.sqrt(b.r*b.r+d*2.4*K));
-    b.roll+=d/b.r;
+    if(b.r<tgt) b.r=Math.min(tgt,Math.sqrt(b.r*b.r+step*2.4*K));
+    b.roll+=step/b.r; b.dir=Math.atan2(dy,dx);
     tctx.strokeStyle='rgba(104,136,78,0.6)'; tctx.lineCap='round'; tctx.lineWidth=b.r*1.05;
     tctx.beginPath(); tctx.moveTo(ox,oy-b.r*0.2); tctx.lineTo(b.x,b.y-b.r*0.2); tctx.stroke();
     if(!SM.leaf.found&&Math.hypot(b.x-SM.leaf.x,b.y-b.r*0.2-SM.leaf.y)<b.r*0.7){
@@ -1987,8 +2154,11 @@ function smMove(x,y){
     }
     smStage();
   }else if(SM.stage==='push'){
-    const s=SM.stack, ox=s.x, oy=s.y;
-    s.x=Math.max(s.rb+6,s.x+dx*0.85); s.y=clamp(s.y+dy*0.85,SM.HZ+s.rb+10,H-8);
+    const s=SM.stack, tx=Math.max(s.rb+6,g.x), ty=clamp(g.y+s.rb*0.5,SM.HZ+s.rb+10,H-8);
+    const dx=tx-s.x, dy=ty-s.y, dist=Math.hypot(dx,dy), step=Math.min(dist,dist*Math.min(1,dt*10),700*K*dt);
+    if(dist<0.3) return;
+    const ox=s.x, oy=s.y;
+    s.x+=dx/dist*step; s.y+=dy/dist*step;
     tctx.strokeStyle='rgba(104,136,78,0.45)'; tctx.lineWidth=s.rb*1.2; tctx.beginPath(); tctx.moveTo(ox,oy-s.rb*0.2); tctx.lineTo(s.x,s.y-s.rb*0.2); tctx.stroke();
     if(s.x>SM.edgeX){SM.stage='slide'; SM.slideT=0; SM.grab=null; SM.msg=''; whee(); buzz([20,20,20,20,40]);}
   }
@@ -2010,7 +2180,7 @@ function smStage(){
   }
 }
 function updateSnowman(dt){
-  SM.t+=dt; animateFlakes(dt);
+  SM.t+=dt; animateFlakes(dt); smSteer(dt);
   if(SM.stack) SM.stack.hop=Math.max(0,SM.stack.hop-dt*3);
   SM.flashT=Math.max(0,SM.flashT-dt);
   if(SM.stage==='decorate'){SM.decoT+=dt; if(SM.decoT>2.6){SM.stage='push'; SM.msg='Push the snowman over the edge of the hill →';}}
@@ -2038,6 +2208,9 @@ function shadeBall(x,cy,r){
 function drawBall(b){
   ctx.fillStyle='rgba(90,110,140,0.18)'; ctx.beginPath(); ctx.ellipse(b.x,b.y,b.r*0.95,b.r*0.28,0,0,6.283); ctx.fill();
   shadeBall(b.x,b.y-b.r,b.r);
+  // Specks of grass and snow turning with the roll, so the ball reads as rolling.
+  ctx.fillStyle='rgba(120,140,110,0.35)';
+  for(let i=0;i<4;i++){const a=b.roll+i*1.57, c=Math.cos(a); if(c<0) continue; const off=Math.sin(a)*b.r*0.75; ctx.beginPath(); ctx.ellipse(b.x+Math.cos(b.dir||0)*off,b.y-b.r+Math.sin(b.dir||0)*off,b.r*0.08*c+0.5,b.r*0.08+0.5,0,0,6.283); ctx.fill();}
   if(b.ready){ctx.strokeStyle=`rgba(255,210,122,${0.6+0.4*Math.sin(SM.t*6)})`; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(b.x,b.y-b.r,b.r+3,0,6.283); ctx.stroke();}
 }
 function smOpts(){const s=SM.stack; return {rb:s.rb,rm:s.rm,rh:s.rh,hop:s.hop,deco:SM.stage==='decorate'?Math.floor(SM.decoT/0.45):s.rh?5:0,armA:0,rot:0,smile:1};}
@@ -2137,6 +2310,7 @@ function renderTitle(){
   $('contBtn').hidden=!(r&&LEVELS[r.lvl]);
   if(r&&LEVELS[r.lvl]) $('contInfo').textContent=`${LEVELS[r.lvl].town} ${DAY_NAMES[(r.day||1)-1]} · ${fmtTime.format(r.clock)} · ${num(r.score)} pts`;
   $('shedInfo').textContent=`${num(store.bank)} leaves to spend`;
+  $('tossInfo').textContent=store.tossBest?`best ${num(store.tossBest)}`:'a fair game of cornhole with leaf bags';
   const di=dailyInfo(), db=store.best[`daily:${di.key}`], streak=dailyStreak();
   $('dailyInfo').textContent=`${LEVELS[di.id].town} · ${DAY_NAMES[di.day-1]} · ${db?`best ${num(db.score)}`:'not raked yet'}${streak>1?` · ${streak}-day streak`:''}`;
 }
@@ -2238,6 +2412,9 @@ function renderShed(){
     const off=!owned&&(c.milestone||c.prize||store.bank<c.price);
     return `<button class="swatch" type="button" data-slot="${slot}" data-id="${k}" aria-pressed="${on}" ${off?'disabled':''}><i style="background:${color(c)}"></i>${c.name} <small>${label}</small></button>`;
   }).join('');
+  const vacOwned=store.owned.includes('vacuum');
+  $('tools').innerHTML=`<div class="up"><strong>Leaf vacuum</strong><button class="buy" type="button" id="buyVac" ${vacOwned||store.bank<VAC_PRICE?'disabled':''}>${vacOwned?'Owned':`Buy · ${num(VAC_PRICE)}`}</button><small>Hold your finger down to pull in leaves within reach. No swiping, but no pile bonuses either. Free on Relaxed.</small></div>`;
+  $('buyVac').addEventListener('click',()=>{if(vacOwned||store.bank<VAC_PRICE) return; store.bank-=VAC_PRICE; store.owned.push('vacuum'); store.opts.tool='vac'; save(); renderShed();});
   $('tarps').innerHTML=swatches(TARPS,'tarp',c=>c.milestone?`repeating-linear-gradient(90deg,${c.fill} 0 6px,${c.edge} 6px 12px)`:c.fill);
   $('rakes').innerHTML=swatches(RAKES,'rake',c=>c.c);
   const top=COMPOST[COMPOST.length-1][0];
@@ -2281,7 +2458,7 @@ function renderOptions(){
 }
 
 function goTitle(){state='title'; renderTitle(); show('title'); $('playBtn').focus();}
-function goMap(){DAILY=null; state='map'; mapSel=selected; DAY=mapDay=Math.min(DAY,store.unlocked[selected]||1); reset(); renderMap(); show('mapScreen');}
+function goMap(){DAILY=null; TOSS=null; if(!LEVELS[selected]&&selected!=='ne'&&selected!=='mo') selected='vt'; state='map'; mapSel=selected; DAY=mapDay=Math.min(DAY,store.unlocked[selected]||1); reset(); renderMap(); show('mapScreen');}
 
 // A history entry during play turns the phone's back gesture into Pause instead of leaving the page.
 let trapped=false, ignorePop=false;
@@ -2291,14 +2468,16 @@ addEventListener('popstate',()=>{
   if(ignorePop){ignorePop=false; return;}
   trapped=false;
   if(state==='play'||state==='paused'){pause(); pushTrap();}
+  else if(state==='toss') endToss(true);
 });
 
+function syncTool(){const ok=vacAvailable(); $('toolBtn').hidden=!ok; if(!ok) store.opts.tool='rake'; $('toolBtn').textContent=vacOn()?'Vacuum':'Rake'; $('toolBtn').setAttribute('aria-label',`Tool: ${vacOn()?'leaf vacuum':'rake'}. Tap to switch.`);}
 function begin(){
   initAudio();
   DAILY=null;
   if(LEVELS[mapSel]){selected=mapSel; DAY=mapDay;} else if(SPECIAL[mapSel]&&specialOpen(mapSel)){selected=mapSel; DAY=1;}
   store.opts.last=selected; save();
-  clearRound(); reset(); state='play'; show(null); pushTrap();
+  clearRound(); reset(); state='play'; show(null); pushTrap(); syncTool();
 }
 function pause(){
   if(state!=='play'&&state!=='paused') return;
@@ -2308,7 +2487,7 @@ function pause(){
   $('soundPause').checked=!store.opts.muted;
   show('pause'); $('resumeBtn').focus(); audioTick();
 }
-function resume(){initAudio(); state='play'; last=performance.now(); show(null); pushTrap();}
+function resume(){initAudio(); syncTool(); state='play'; last=performance.now(); show(null); pushTrap();}
 
 $('playBtn').addEventListener('click',()=>{DAY=store.unlocked[selected]||1; goMap();});
 $('optBtn').addEventListener('click',()=>{state='options'; renderOptions(); show('options');});
@@ -2319,12 +2498,15 @@ $('pauseBtn').addEventListener('click',pause);
 $('resumeBtn').addEventListener('click',resume);
 $('restartBtn').addEventListener('click',()=>{if(DAILY) return beginDaily(); mapSel=selected; mapDay=DAY; begin();});
 $('quitBtn').addEventListener('click',()=>{clearRound(); leaveTrap(); goMap();});
-$('again').addEventListener('click',()=>{if(DAILY) return beginDaily(); mapSel=selected; mapDay=DAY; begin();});
+$('again').addEventListener('click',()=>{if(TOSS) return startToss(); if(DAILY) return beginDaily(); mapSel=selected; mapDay=DAY; begin();});
 $('nextDay').addEventListener('click',()=>{mapSel=selected; mapDay=Math.min(5,DAY+1); begin();});
 $('dailyBtn').addEventListener('click',beginDaily);
+$('toolBtn').addEventListener('click',()=>{store.opts.tool=vacOn()?'rake':'vac'; save(); syncTool();});
+$('tossBtn').addEventListener('click',startToss);
+$('tossQuit').addEventListener('click',()=>endToss(true));
 $('shedBtn').addEventListener('click',()=>{state='shed'; renderShed(); show('shed'); $('shedBack').focus();});
 $('shedBack').addEventListener('click',goTitle);
-$('toMap').addEventListener('click',goMap);
+$('toMap').addEventListener('click',()=>{if(TOSS){TOSS=null; return goTitle();} goMap();});
 $('resetBtn').addEventListener('click',()=>{$('resetAsk').hidden=false; $('resetBtn').hidden=true; $('resetNo').focus();});
 $('resetNo').addEventListener('click',()=>{$('resetAsk').hidden=true; $('resetBtn').hidden=false;});
 $('resetYes').addEventListener('click',()=>{store={...blankStore(),opts:store.opts}; save(); clearRound(); $('resetAsk').hidden=true; $('resetDone').hidden=false; $('resetBtn').hidden=false;});
@@ -2362,7 +2544,7 @@ function audioTick(){
   if(!ac) return;
   const on=!store.opts.muted&&state==='play', t=ac.currentTime;
   rustle.gain.setTargetAtTime(on&&drag?Math.min(rakeSpeed/1600,1)*(carried>0?0.22:0.08):0,t,0.04);
-  whoosh.gain.setTargetAtTime(on?env*0.3:0,t,0.15);
+  whoosh.gain.setTargetAtTime(on?Math.max(env*0.3,drag&&vacOn()?0.13:0):0,t,0.15);
 }
 function chime(good){
   if(!ac||store.opts.muted) return;
@@ -2414,6 +2596,7 @@ function whee(){
 // ---------- Input
 function pos(e){return [e.clientX,e.clientY];}
 cv.addEventListener('pointerdown',e=>{
+  if(state==='toss'){initAudio(); tossDown(...pos(e),e.pointerId); try{cv.setPointerCapture(e.pointerId);}catch(_){} return;}
   if(state==='ending'&&ending&&ending.sub==='snowman'){initAudio(); smDown(...pos(e)); try{cv.setPointerCapture(e.pointerId);}catch(_){} return;}
   if(state==='play'&&TH&&!grab){
     const [x,y]=pos(e), b=TH.bags.find(o=>Math.hypot(o.x-x,o.y-y)<34*K);
@@ -2425,6 +2608,7 @@ cv.addEventListener('pointerdown',e=>{
   [rx,ry]=pos(e); px=rx; py=ry;
 });
 cv.addEventListener('pointermove',e=>{
+  if(state==='toss'){tossMove(...pos(e),e.pointerId); return;}
   if(state==='ending'&&ending&&ending.sub==='snowman'){smMove(...pos(e)); return;}
   if(grab&&e.pointerId===grab.id){const [x,y]=pos(e); grab.b.x=x; grab.b.y=y; grab.pts.push([x,y,performance.now()]); if(grab.pts.length>8) grab.pts.shift(); return;}
   if(drag&&e.pointerId!==pid) return;
@@ -2432,6 +2616,7 @@ cv.addEventListener('pointermove',e=>{
   if(!drag){px=rx; py=ry; showRake=e.pointerType==='mouse';}
 });
 const lift=e=>{
+  if(state==='toss'){tossUp(e.pointerId); return;}
   if(state==='ending'&&SM){SM.grab=null; return;}
   if(grab&&e.pointerId===grab.id){releaseBag(); return;}
   if(e.pointerId===pid){drag=false; pid=null; if(e.pointerType!=='mouse') showRake=false;}};
@@ -2448,8 +2633,10 @@ function frame(now){
   const dt=Math.min((now-last)/1000,1/30); last=now;
   if(state==='play'&&dt>0) update(dt);
   else if(state==='ending'&&dt>0) updateEnding(dt);
+  else if(state==='toss'&&dt>0) updateToss(dt);
   else if(winterView()&&dt>0) animateFlakes(dt);
-  if(state==='ending'&&ending&&ending.sub==='snowman') drawSnowmanScene(); else{draw(); if(state==='ending'&&ending) drawFirstSnow();}
+  if(state==='toss') drawToss();
+  else if(state==='ending'&&ending&&ending.sub==='snowman') drawSnowmanScene(); else{draw(); if(state==='ending'&&ending) drawFirstSnow();}
   if(shakeAmt>0.3){cv.style.transform=`translate(${(Math.random()-0.5)*shakeAmt}px,${(Math.random()-0.5)*shakeAmt}px)`; shakeAmt*=Math.exp(-9*dt);}
   else if(shakeAmt){shakeAmt=0; cv.style.transform='';}
   requestAnimationFrame(frame);
