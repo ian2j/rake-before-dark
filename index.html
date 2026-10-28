@@ -234,7 +234,7 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
         <li>Things are hidden under the leaves. Each one you find goes on the shelf in your shed.</li>
         <li>Each town is a five-day week, and every day gets harder. Earn a star to unlock the next day.</li>
         <li>Every leaf you bag goes to the shed, where you can spend leaves on upgrades.</li>
-        <li>Tired fingers? The leaf vacuum (in the shed, free on Relaxed) lets you hold your finger still and pull leaves in. Switch tools with the button at the top.</li>
+        <li>Tired fingers? The leaf vacuum (in the shed, free on Relaxed) lets you hold your finger still and suck leaves straight into the bag. Switch tools with the button at the top.</li>
         <li>The daily lawn is the same for everyone each day. Come back tomorrow for a new one.</li>
       </ul>
     </details>
@@ -1905,28 +1905,30 @@ function beginDaily(){
   withSeed(d.seed,reset); state='play'; show(null); pushTrap(); syncTool();
 }
 
-// ---------- The leaf vacuum: hold the nozzle down and leaves within reach are pulled in and bagged, about a dozen a second.
+// ---------- The leaf vacuum: hold the nozzle down and leaves within reach are pulled in and bagged straight away, up to
+// about sixty a second. A tally at the nozzle shows what it has bagged.
 const VAC_PRICE=800;
 const vacAvailable=()=>store.owned.includes('vacuum')||store.opts.diff==='relaxed';
 const vacOn=()=>store.opts.tool==='vac'&&vacAvailable();
-const vacR=()=>72*K*(1+0.08*U('rake'))*(active.R?1.5:1)*(active.P?0.6:1);
-let suck=0;
+const vacR=()=>80*K*(1+0.08*U('rake'))*(active.R?1.5:1)*(active.P?0.6:1);
+let suck=0, vacTally=0, vacTallyT=0;
 function vacuum(dt){
   const R=vacR(), r2=R*R;
-  suck=Math.min(3,suck+dt*13);
+  suck=Math.min(10,suck+dt*60);
   for(const l of leaves){
     if(l.st!==0) continue;
     const dx=rx-l.x, dy=ry-l.y, d2=dx*dx+dy*dy;
     if(d2>r2) continue;
     const d=Math.sqrt(d2)||1, f=1-d/R;
-    l.vx+=dx/d*2400*K*f*dt; l.vy+=dy/d*2400*K*f*dt; l.va+=(Math.random()-0.5)*12*dt; l.b=Math.max(0,l.b-dt*2);
-    if(d<16*K&&suck>=1){suck--; l.st=2; l.bt=0; l.vac=true;}
+    l.vx+=dx/d*3600*K*(0.35+f)*dt; l.vy+=dy/d*3600*K*(0.35+f)*dt; l.va+=(Math.random()-0.5)*12*dt; l.b=Math.max(0,l.b-dt*2);
+    if(d<26*K&&suck>=1){suck--; l.st=2; l.bt=0; l.vac=true; vacTally++; vacTallyT=1.2;}
   }
   for(const it of items) if(!it.raked&&Math.hypot(it.x-rx,it.y-ry)<R) it.raked=true;
   for(const u of pickups) if(u.z<=0&&!u.got&&Math.hypot(u.x-rx,u.y-ry)<R*0.6) activate(u);
   for(const k of kids) if(k.st==='seek'&&Math.hypot(k.x-rx,k.y-ry)<R*0.7){k.st='shoo'; score+=50; stat('shoo'); popup('Shoo!  +50',k.x,k.y-24*K,false);}
   if(LV.snow||LV.boss){nctx.setTransform(DPR,0,0,DPR,0,0); nctx.globalCompositeOperation='destination-out'; nctx.fillStyle='rgba(0,0,0,0.5)'; nctx.beginPath(); nctx.arc(rx,ry,R*0.5,0,6.283); nctx.fill(); nctx.globalCompositeOperation='source-over';}
   rakeSpeed=drag?400:0; carried=1;
+  vacTallyT-=dt; if(vacTallyT<=0) vacTally=0;
 }
 function drawVacuum(){
   const R=vacR(), hx=rx+70*K, hy=ry+120*K;
@@ -1940,8 +1942,16 @@ function drawVacuum(){
   ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=7*K; ctx.beginPath(); ctx.moveTo(rx+4,ry+6); ctx.quadraticCurveTo(rx+10*K,hy-30*K,hx+4,hy+6); ctx.stroke();
   ctx.strokeStyle='#3a3f48'; ctx.lineWidth=6*K; ctx.beginPath(); ctx.moveTo(rx,ry); ctx.quadraticCurveTo(rx+6*K,hy-34*K,hx,hy); ctx.stroke();
   ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.ellipse(hx+8*K,hy+8*K,16*K,11*K,0.4,0,6.283); ctx.fill();
+  const fill=(bagged%BAG_SIZE)/BAG_SIZE;
+  ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(hx-6*K,hy+22*K,28*K,4*K);
+  ctx.fillStyle='#ffd27a'; ctx.fillRect(hx-6*K,hy+22*K,28*K*fill,4*K);
   ctx.fillStyle='#2b2f36'; ctx.beginPath(); ctx.ellipse(rx,ry,13*K,9*K,0,0,6.283); ctx.fill();
   ctx.fillStyle='#111'; ctx.beginPath(); ctx.ellipse(rx,ry,7*K,4.5*K,0,0,6.283); ctx.fill();
+  if(vacTally>0){
+    ctx.globalAlpha=Math.min(1,vacTallyT*2); ctx.font=`700 ${14*K}px Karla, system-ui, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.lineJoin='round'; ctx.lineWidth=4; ctx.strokeStyle='rgba(28,21,48,0.85)'; ctx.fillStyle='#ffd27a';
+    const t=`+${vacTally} bagged`; ctx.strokeText(t,rx,ry-30*K); ctx.fillText(t,rx,ry-30*K); ctx.globalAlpha=1;
+  }
   ctx.restore();
 }
 
@@ -1952,22 +1962,40 @@ const TOSS_SECS=60;
 function startToss(){
   initAudio(); state='toss'; popups=[]; leaveTrap(); show(null); $('hud').style.visibility='hidden'; $('tossQuit').hidden=false; pushTrap();
   TOSS={t:0,score:0,throws:0,hits:0,bag:null,fly:[],landed:[],grab:null,wind:0,cart:{x:W*0.3,dir:1},over:false,
-    rings:[[0.28,0.66,34,10],[0.72,0.64,34,10],[0.5,0.47,28,25],[0.27,0.27,22,50],[0.73,0.25,22,50]].map(([x,y,r,pts])=>({x:W*x,y:MINY+(H-MINY)*y*0.92,r:r*K,pts}))};
+    rings:[[0.28,0.66,42,10],[0.72,0.64,42,10],[0.5,0.47,36,25],[0.27,0.27,30,50],[0.73,0.25,30,50]].map(([x,y,r,pts])=>({x:W*x,y:MINY+(H-MINY)*y*0.92,r:r*K,pts}))};
   tossNextBag();
 }
-function tossNextBag(){TOSS.bag={x:W/2,y:H-SAFE_B-64*K,hx:W/2,hy:H-SAFE_B-64*K}; TOSS.wind=(Math.random()-0.5)*2;}
-function tossDown(x,y,id){const b=TOSS.bag; if(!b||TOSS.over) return; if(Math.hypot(x-b.x,y-b.y)<60*K) TOSS.grab={id,pts:[[x,y,performance.now()]]};}
-function tossMove(x,y,id){const g=TOSS&&TOSS.grab; if(!g||g.id!==id) return; TOSS.bag.x=x; TOSS.bag.y=y; g.pts.push([x,y,performance.now()]); if(g.pts.length>8) g.pts.shift();}
+function tossNextBag(){TOSS.bag={x:W/2,y:H-SAFE_B-64*K,hx:W/2,hy:H-SAFE_B-64*K}; TOSS.wind=TOSS.throws<2?0:(Math.random()-0.5)*1.4;}
+// Drag the bag back toward you to aim: the pull sets direction and distance, and a preview shows where it lands, wind included.
+// A quick upward flick still throws too.
+const PULL_MAX=()=>Math.min(190*K,(H-MINY)*0.3), TOSS_RANGE=()=>(H-MINY)*0.82;
+function tossAim(b){
+  const px=b.hx-b.x, py=b.hy-b.y, pl=Math.hypot(px,py);
+  if(pl<18*K||py>-4*K) return null;
+  const f=Math.min(1,pl/PULL_MAX()), range=40*K+f*(TOSS_RANGE()-40*K);
+  return {dx:px/pl,dy:py/pl,range};
+}
+const tossLand=(b,a)=>[b.hx+a.dx*a.range+TOSS.wind*55*K,b.hy+a.dy*a.range];
+function tossDown(x,y,id){const b=TOSS.bag; if(!b||TOSS.over) return; if(Math.hypot(x-b.x,y-b.y)<70*K) TOSS.grab={id,pts:[[x,y,performance.now()]]};}
+function tossMove(x,y,id){const g=TOSS&&TOSS.grab; if(!g||g.id!==id) return; const b=TOSS.bag, dx=x-b.hx, dy=y-b.hy, dl=Math.hypot(dx,dy), m=Math.min(1,PULL_MAX()/(dl||1)); b.x=dy>0?b.hx+dx*m:x; b.y=dy>0?b.hy+dy*m:y; g.pts.push([x,y,performance.now()]); if(g.pts.length>8) g.pts.shift();}
 function tossUp(id){
   const g=TOSS&&TOSS.grab; if(!g||g.id!==id) return; TOSS.grab=null;
   const now=g.pts[g.pts.length-1]; let old=g.pts[0];
   for(const q of g.pts) if(now[2]-q[2]<=90){old=q; break;}
   const t=Math.max(16,now[2]-old[2])/1000, vx=(now[0]-old[0])/t, vy=(now[1]-old[1])/t;
-  if(vy<-200) tossThrow(vx,vy); else{TOSS.bag.x=TOSS.bag.hx; TOSS.bag.y=TOSS.bag.hy;}
+  const aim=tossAim(TOSS.bag);
+  if(aim) tossSling(aim);
+  else if(vy<-200) tossThrow(vx,vy);
+  else{TOSS.bag.x=TOSS.bag.hx; TOSS.bag.y=TOSS.bag.hy;}
 }
+function tossSling(a){const b=TOSS.bag; b.x=b.hx; b.y=b.hy; tossLaunch(a.dx,a.dy,a.range);}
 function tossThrow(vx,vy){
-  const b=TOSS.bag, sp=Math.hypot(vx,vy)||1, range=clamp(sp*0.28*K,60*K,(H-MINY)*0.85);
-  TOSS.fly.push({x0:b.x,y0:b.y,dx:vx/sp,dy:vy/sp,range,u:0,drift:TOSS.wind*55*K,rot:0});
+  const sp=Math.hypot(vx,vy)||1;
+  tossLaunch(vx/sp,vy/sp,clamp(sp*0.28*K,60*K,TOSS_RANGE()));
+}
+function tossLaunch(dx,dy,range){
+  const b=TOSS.bag;
+  TOSS.fly.push({x0:b.x,y0:b.y,dx,dy,range,u:0,drift:TOSS.wind*55*K,rot:0});
   TOSS.throws++; TOSS.bag=null; noiseHit(600,0.6,0.22,0.25);
   setTimeout(()=>{if(TOSS&&!TOSS.over) tossNextBag();},350);
 }
@@ -1981,7 +2009,7 @@ function updateToss(dt){
       const x=f.x0+f.dx*f.range+f.drift, y=f.y0+f.dy*f.range;
       const cartY=MINY+(H-MINY)*0.36*0.92+0;
       let best=0;
-      for(const r of [...T.rings,{x:c.x,y:cartY,r:22*K,pts:100}]){const d=Math.hypot(x-r.x,y-r.y); if(d<r.r) best=Math.max(best,r.pts===100?100:d<r.r*0.4?r.pts*2:r.pts);}
+      for(const r of [...T.rings,{x:c.x,y:cartY,r:26*K,pts:100}]){const d=Math.hypot(x-r.x,y-r.y); if(d<r.r) best=Math.max(best,r.pts===100?100:d<r.r*0.45?r.pts*2:r.pts);}
       T.landed.push({x,y,t:0,rot:f.rot,pts:best});
       if(best){T.score+=best; T.hits++; popup(`+${best}`,x,y-20*K,best>=50); tones(best>=50?[523,659,784]:[523,659],'triangle',0.08,0.3,0.14); if(best>=50){shake(3); buzz(25);}}
       else{popup('Miss',x,y-16*K,false); noiseHit(300,0.6,0.15,0.15);}
@@ -2023,7 +2051,7 @@ function drawToss(){
     ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(r.x+3,r.y+5,r.r*1.25,r.r*0.95,0,0,6.283); ctx.fill();
     ctx.fillStyle='#d9b45a'; ctx.beginPath(); ctx.ellipse(r.x,r.y,r.r*1.25,r.r*0.95,0,0,6.283); ctx.fill();
     ctx.fillStyle='#f3e1ae'; ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,6.283); ctx.fill();
-    ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.arc(r.x,r.y,r.r*0.4,0,6.283); ctx.fill();
+    ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.arc(r.x,r.y,r.r*0.45,0,6.283); ctx.fill();
     ctx.fillStyle='#5a3d22'; ctx.font=`700 ${11*K}px Karla, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(r.pts,r.x,r.y+r.r*0.72);
   }
   const cy=MINY+(H-MINY)*0.36*0.92, cx=T.cart.x;
@@ -2036,7 +2064,19 @@ function drawToss(){
   for(const l of T.landed){ctx.globalAlpha=Math.min(1,(5-l.t)/1.5); drawLaunchBag(l.x,l.y,0.8,l.rot); ctx.globalAlpha=1;}
   const by=H-SAFE_B-64*K;
   ctx.fillStyle='#d9b45a'; ctx.fillRect(W/2-34*K,by+10*K,68*K,22*K); ctx.strokeStyle='#a8873c'; ctx.strokeRect(W/2-34*K,by+10*K,68*K,22*K);
-  if(T.bag) drawLaunchBag(T.bag.x,T.bag.y,1,0);
+  if(T.bag){
+    const a=T.grab&&tossAim(T.bag);
+    if(a){
+      const [lx,ly]=tossLand(T.bag,a);
+      ctx.strokeStyle='rgba(255,240,210,0.8)'; ctx.lineWidth=2; ctx.setLineDash([5,7]); ctx.beginPath(); ctx.moveTo(T.bag.hx,T.bag.hy);
+      for(let i=1;i<=20;i++){const u=i/20; ctx.lineTo(T.bag.hx+a.dx*a.range*u+T.wind*55*K*u*u,T.bag.hy+a.dy*a.range*u-4*u*(1-u)*70*K);}
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.ellipse(lx,ly,14*K,9*K,0,0,6.283); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx-5*K,ly); ctx.lineTo(lx+5*K,ly); ctx.moveTo(lx,ly-4*K); ctx.lineTo(lx,ly+4*K); ctx.stroke();
+      ctx.strokeStyle='rgba(90,61,34,0.8)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(T.bag.hx-20*K,T.bag.hy+8*K); ctx.lineTo(T.bag.x,T.bag.y); ctx.lineTo(T.bag.hx+20*K,T.bag.hy+8*K); ctx.stroke();
+    }
+    drawLaunchBag(T.bag.x,T.bag.y,1,0);
+  }
   for(const f of T.fly){
     const u=f.u, gx=f.x0+f.dx*f.range*u+f.drift*u*u, gy=f.y0+f.dy*f.range*u, z=4*u*(1-u);
     ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(gx,gy,12*K,6*K,0,0,6.283); ctx.fill();
@@ -2050,7 +2090,7 @@ function drawToss(){
   ctx.font=`600 ${13*K}px Karla, sans-serif`; ctx.fillStyle='#fbf1e1';
   const windTxt=Math.abs(T.wind)<0.08?'Calm':`Wind ${Math.round(Math.abs(T.wind)*12)} mph ${T.wind>0?'→':'←'}`;
   ctx.strokeText(`${left}s · ${windTxt}`,W/2,top+20*K); ctx.fillText(`${left}s · ${windTxt}`,W/2,top+20*K);
-  if(T.throws===0&&T.bag) {ctx.font=`700 ${14*K}px Karla, sans-serif`; ctx.fillStyle='#ffd27a'; ctx.strokeText('Flick the bag up the field. Harder goes farther.',W/2,by-30*K); ctx.fillText('Flick the bag up the field. Harder goes farther.',W/2,by-30*K);}
+  if(T.throws===0&&T.bag) {ctx.font=`700 ${14*K}px Karla, sans-serif`; ctx.fillStyle='#ffd27a'; const tip='Pull the bag back to aim, then let go.'; ctx.strokeText(tip,W/2,by-30*K); ctx.fillText(tip,W/2,by-30*K);}
   if(shakeAmt) {}
 }
 
@@ -2429,7 +2469,7 @@ function renderShed(){
     return `<button class="swatch" type="button" data-slot="${slot}" data-id="${k}" aria-pressed="${on}" ${off?'disabled':''}><i style="background:${color(c)}"></i>${c.name} <small>${label}</small></button>`;
   }).join('');
   const vacOwned=store.owned.includes('vacuum');
-  $('tools').innerHTML=`<div class="up"><strong>Leaf vacuum</strong><button class="buy" type="button" id="buyVac" ${vacOwned||store.bank<VAC_PRICE?'disabled':''}>${vacOwned?'Owned':`Buy · ${num(VAC_PRICE)}`}</button><small>Hold your finger down to pull in leaves within reach. No swiping, but no pile bonuses either. Free on Relaxed.</small></div>`;
+  $('tools').innerHTML=`<div class="up"><strong>Leaf vacuum</strong><button class="buy" type="button" id="buyVac" ${vacOwned||store.bank<VAC_PRICE?'disabled':''}>${vacOwned?'Owned':`Buy · ${num(VAC_PRICE)}`}</button><small>Hold your finger down to pull in leaves within reach. Leaves go straight into the bag, no raking needed. No pile bonuses. Free on Relaxed.</small></div>`;
   $('buyVac').addEventListener('click',()=>{if(vacOwned||store.bank<VAC_PRICE) return; store.bank-=VAC_PRICE; store.owned.push('vacuum'); store.opts.tool='vac'; save(); renderShed();});
   $('tarps').innerHTML=swatches(TARPS,'tarp',c=>c.milestone?`repeating-linear-gradient(90deg,${c.fill} 0 6px,${c.edge} 6px 12px)`:c.fill);
   $('rakes').innerHTML=swatches(RAKES,'rake',c=>c.c);

@@ -18,9 +18,9 @@ The daily lawn picks one town and weekday per date and lays the lawn out from a 
 
 Three stars on all 30 days unlocks Stowe by moonlight (rake by the light of a lantern on your rake) and a moonlit silver rake handle.
 
-Leaf vacuum (shed, 800 leaves; free on Relaxed): switch tools at the top of the screen, then hold your finger down to pull leaves in, about ten a second, without pile bonuses.
+Leaf vacuum (shed, 800 leaves; free on Relaxed): switch tools at the top of the screen, then hold your finger down and leaves are sucked straight into the bag, up to about sixty a second, without pile bonuses.
 
-Bag toss: a fall-fair cornhole mini-game from the main menu. Flick bags at rings (10/25/50, double in the bull's-eye) and a moving pumpkin cart (100); flick strength sets distance, wind drifts the bag. A minute per game; a quarter of the score goes to the shed.
+Bag toss: a fall-fair cornhole mini-game from the main menu. Pull a bag back like a slingshot (a dotted preview shows where it lands, wind included) or flick it, at rings (10/25/50, double in the bull's-eye) and a moving pumpkin cart (100). A minute per game; a quarter of the score goes to the shed.
 
 Polish: screen shake, leaf crunch sounds, vibration on Android, and sixteen achievements shown in the shed.
 
