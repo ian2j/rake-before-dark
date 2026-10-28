@@ -2,6 +2,7 @@
 import {G} from './state.js';
 import {ACH} from '../data/levels.js';
 import {save} from './store.js';
+import {achSound} from './audio.js';
 import {$, reduceMotion} from '../lib/util.js';
 
 // ---------- Polish: screen shake, phone vibration, achievements.
@@ -16,5 +17,5 @@ export function award(id){
   G.store.ach[id]=Date.now(); save();
   const el=$('toast'); el.textContent=`Achievement: ${ACH[id].name}`; el.hidden=false;
   clearTimeout(G.toastT); G.toastT=setTimeout(()=>{el.hidden=true;},2800);
-  buzz(30);
+  buzz(30); achSound();
 }

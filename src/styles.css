@@ -94,6 +94,9 @@ button:focus-visible,.dot:focus-visible{outline:2px solid var(--gold);outline-of
 .seg label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:2px}
 .toggle{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}
 .toggle input{width:1.15rem;height:1.15rem;accent-color:var(--ember)}
+.vol{display:flex;align-items:center;gap:12px;font-weight:600;margin-top:10px}
+.vol span{min-width:4.2em}
+.vol input{flex:1;min-width:0;accent-color:var(--ember)}
 .confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9rem}
 .confirm .secondary{padding:.45rem .9rem;font-size:.9rem}
 

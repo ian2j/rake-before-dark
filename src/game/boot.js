@@ -1,6 +1,7 @@
 // Starts the game: fills in initial state, loads saved progress, wires up events, and starts the frame loop.
 import {G} from './state.js';
 import {DIFFS, LEVELS, dayParams} from '../data/levels.js';
+import {bindAudioLifecycle} from './audio.js';
 import {bindInput} from './input.js';
 import {layout} from './lawn.js';
 import {frame} from './loop.js';
@@ -16,7 +17,7 @@ export function boot(){
   G.LV=LEVELS[G.selected];
   G.D=DIFFS[G.store.opts.diff]||DIFFS.standard;
   G.DP=dayParams(G.LV,1);
-  bindUi(); bindInput();
+  bindUi(); bindAudioLifecycle(); bindInput();
   layout(); reset(); goTitle();
   requestAnimationFrame(frame);
 }

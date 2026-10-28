@@ -15,7 +15,7 @@ export const bossOpen=()=>specialOpen('ne');
 // the shed (leaves to spend, lifetime total, upgrades, cosmetics), and an interrupted round.
 export const KEY='rake-before-dark:v1', ROUND_KEY='rake-before-dark:round';
 
-export const blankStore=()=>({best:{},finds:{},unlocked:{},bank:0,total:0,up:{},owned:['blue','ash'],cos:{tarp:'blue',rake:'ash'},stats:{},ach:{},dale:[],dailyLog:{},opts:{diff:'standard',muted:false,vibrate:true,last:'vt'}});
+export const blankStore=()=>({best:{},finds:{},unlocked:{},bank:0,total:0,up:{},owned:['blue','ash'],cos:{tarp:'blue',rake:'ash'},stats:{},ach:{},dale:[],dailyLog:{},opts:{diff:'standard',muted:false,music:0.7,sfx:1,vibrate:true,last:'vt'}});
 
 export const U=k=>G.store.up[k]||0;
 

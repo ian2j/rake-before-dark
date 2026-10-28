@@ -1,6 +1,6 @@
 // The Greenville moose.
 import {G} from './state.js';
-import {noiseHit, tones} from './audio.js';
+import {bellow, noiseHit, tones} from './audio.js';
 import {ctx} from './canvas.js';
 import {densestPile} from './kids.js';
 import {inTarp, lawnSpot} from './lawn.js';
@@ -33,7 +33,7 @@ export function updateMoose(dt){
   }
   if(M.mode==='wander'){
     M.charge-=dt;
-    if(M.charge<=0){M.mode='charge'; tones([98,82],'sawtooth',0.25,0.5,0.12);}
+    if(M.charge<=0){M.mode='charge'; bellow();}
     if(d<10) M.home=null;
   }
   M.trample-=dt;

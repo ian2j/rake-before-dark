@@ -2,7 +2,7 @@
 import {G} from './state.js';
 import {ACH, BOSS, COMPOST, DAY_DESC, DAY_NAMES, DIFFS, LEVELS, MOOSE, PLACES, RAKES, SPECIAL, TARPS, UPGRADES, VAC_PRICE} from '../data/levels.js';
 import {MAP} from '../data/map.js';
-import {audioTick, initAudio} from './audio.js';
+import {applyVolumes, audioTick, initAudio, uiTick} from './audio.js';
 import {dailyInfo, dailyStreak} from './daily.js';
 import {buzz} from './polish.js';
 import {SECS, reset, restoreRound, saveRound} from './round.js';
@@ -172,7 +172,7 @@ export function renderOptions(){
   $('diffOpts').innerHTML=Object.entries(DIFFS).map(([k,d])=>`<label><input type="radio" name="diff" id="diff-${k}" value="${k}" ${k===G.store.opts.diff?'checked':''}><span>${d.name}</span></label>`).join('');
   for(const r of $('diffOpts').querySelectorAll('input')) r.addEventListener('change',()=>{G.store.opts.diff=r.value; save(); G.D=DIFFS[r.value]; $('diffDesc').textContent=G.D.desc;});
   $('diffDesc').textContent=DIFFS[G.store.opts.diff].desc;
-  $('soundOpt').checked=!G.store.opts.muted;
+  $('soundOpt').checked=!G.store.opts.muted; $('musicVol').value=Math.round(G.store.opts.music*100); $('sfxVol').value=Math.round(G.store.opts.sfx*100);
   $('resetAsk').hidden=true; $('resetDone').hidden=true; $('resetBtn').hidden=false;
   $('vibOpt').checked=G.store.opts.vibrate!==false;
   $('testAsk').hidden=true; $('testDone').hidden=true; $('testBtn').hidden=false;
@@ -202,13 +202,15 @@ export function pause(){
   G.drag=false; G.pid=null; G.showRake=false; G.state='paused';
   saveRound();
   $('pauseWhere').textContent=`${G.LV.town}, ${G.LV.state} · ${DAY_NAMES[G.DAY-1]} · ${fmtTime.format(G.T0+(G.T1-G.T0)*Math.min(G.elapsed/SECS(),1))}`;
-  $('soundPause').checked=!G.store.opts.muted;
+  $('soundPause').checked=!G.store.opts.muted; $('musicVolP').value=Math.round(G.store.opts.music*100);
   show('pause'); $('resumeBtn').focus(); audioTick();
 }
 
 export function resume(){initAudio(); syncTool(); G.state='play'; G.last=performance.now(); show(null); pushTrap();}
 
-export function setMuted(m){G.store.opts.muted=m; save(); audioTick();}
+export function setMuted(m){G.store.opts.muted=m; save(); applyVolumes(); audioTick();}
+
+function setVol(k,v){G.store.opts[k]=v/100; save(); applyVolumes();}
 
 // Wires up the buttons and the back-gesture trap.
 // Phones get the share sheet; elsewhere the result is copied. If neither is allowed, the text is selected to copy by hand.
@@ -265,4 +267,10 @@ export function bindUi(){
   $('thanksMap').addEventListener('click',()=>{G.ending=null; G.DAY=G.store.unlocked[G.selected]||1; goMap();});
   $('thanksAgain').addEventListener('click',startSnowman);
   $('soundPause').addEventListener('change',e=>setMuted(!e.target.checked));
+  $('musicVol').addEventListener('input',e=>setVol('music',+e.target.value));
+  $('musicVolP').addEventListener('input',e=>setVol('music',+e.target.value));
+  $('sfxVol').addEventListener('input',e=>setVol('sfx',+e.target.value));
+  $('sfxVol').addEventListener('change',()=>uiTick());
+  // A soft tick on every button press.
+  document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button')) uiTick();});
 }

@@ -1,7 +1,8 @@
 // A round: setup, saving and restoring, the per-frame simulation, scoring and the results screen.
 import {G} from './state.js';
 import {DAY_NAMES, DIFFS, LEVELS, POWERS, dayParams, levelOf} from '../data/levels.js';
-import {audioTick, chime, crunch, foghorn} from './audio.js';
+import {audioTick, chime, crunch, foghorn, sparkle, stinger} from './audio.js';
+import {ambTick} from './ambience.js';
 import {bossLost, initBoss, thBagged, updateBoss, updateThrows} from './boss.js';
 import {nctx, scrape, sctx, snow} from './canvas.js';
 import {dailyStreak, shareText} from './daily.js';
@@ -34,7 +35,7 @@ export function reset(){
   G.leaves=[]; G.bagged=0; G.fell=0; G.elapsed=0; G.playT=0; G.spawnAcc=0; G.snowAmt=0;
   G.score=G.pileBonus=G.dayBonus=G.findBonus=G.bestPile=0; G.dump={n:0,last:0}; G.endedEarly=false; G.popups=[];
   G.pickups=[]; G.active={}; G.nextPower=10; G.tarpScale=1; placeTarp();
-  G.kids=[]; G.nextKid=0; G.kidsT=-1; G.lost=0; G.lostShown=0;
+  G.amb=null; G.kids=[]; G.nextKid=0; G.kidsT=-1; G.lost=0; G.lostShown=0;
   $('chips').innerHTML=''; G.chipKey='';
   G.gust=null; G.nextGust=G.LV.gustEvery[0]+3; G.env=0; G.wx=G.wy=0; G.drag=false; G.lastCarried=0;
   G.N0=Math.round(clamp(G.W*G.H/420,560,1400)*(G.LV.leafMul||1)*G.DP.leafMul);
@@ -315,7 +316,7 @@ export function update(dt){
     if(!covered&&(!G.LV.snow||it.raked)) it.clearT+=dt; else it.clearT=0;
     if(it.clearT>0.25){
       it.found=true; G.score+=FIND_PTS; G.findBonus+=FIND_PTS;
-      popup(`Found: ${it.name}  +${FIND_PTS}`,it.x,it.y-18*G.K,false);
+      popup(`Found: ${it.name}  +${FIND_PTS}`,it.x,it.y-18*G.K,false); sparkle();
       const got=G.store.finds[G.LV.id]||(G.store.finds[G.LV.id]=[]);
       if(!got.includes(it.id)){got.push(it.id); save();}
     }
@@ -330,7 +331,7 @@ export function update(dt){
   sctx.fillRect(0,0,scrape.width,scrape.height);
 
   updateChips(p);
-  audioTick();
+  audioTick(); ambTick(dt,p);
   if(!G.LV.boss&&G.playT>8&&G.groundLeft<=Math.max(4,Math.round(G.N0*0.02))) finish(true);
   else if(G.elapsed>=SECS()) finish(false);
 }
@@ -433,7 +434,7 @@ export function finish(early){
   $('nextDay').hidden=!canNext;
   if(canNext) $('nextDay').textContent=`Rake ${DAY_NAMES[G.DAY]}`;
   $('again').className=canNext?'secondary':'primary';
-  audioTick();
+  audioTick(); stinger(stars);
   setTimeout(()=>{if(G.state==='over'){show('end'); (canNext?$('nextDay'):$('again')).focus();}},700);
 }
 

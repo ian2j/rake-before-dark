@@ -1,7 +1,7 @@
 // Salem: trick-or-treaters and jack-o’-lanterns.
 import {G} from './state.js';
 import {KID_COSTUMES} from '../data/levels.js';
-import {chime} from './audio.js';
+import {giggle} from './audio.js';
 import {ctx} from './canvas.js';
 import {inTarp, lawnSpot} from './lawn.js';
 import {shake} from './polish.js';
@@ -39,7 +39,7 @@ export function updateKids(dt,p){
       if(d<=sp+2){
         k.x=target[0]; k.y=target[1]; k.st='jump'; k.jt=0;
         scatterAt(k.x,k.y,48*G.K,1);
-        popup('Wheee!',k.x,k.y-26*G.K,false); chime(false); shake(2);
+        popup('Wheee!',k.x,k.y-26*G.K,false); giggle(); shake(2);
       }else{k.x+=dx/d*sp; k.y+=dy/d*sp;}
     }else if(k.st==='jump'){
       k.jt+=dt; if(k.jt>0.7) k.st='leave';

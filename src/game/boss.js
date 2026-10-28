@@ -1,7 +1,7 @@
 // The Nor’easter, and the bag throwing it shares with the moose.
 import {G} from './state.js';
 import {BAG_LEAVES, BOSS, BOSS_HP} from '../data/levels.js';
-import {noiseHit, thunder, tones} from './audio.js';
+import {noiseHit, stinger, thunder, tones} from './audio.js';
 import {ctx} from './canvas.js';
 import {densestPile} from './kids.js';
 import {lawnSpot} from './lawn.js';
@@ -161,6 +161,7 @@ export function bossWon(){
 }
 
 export function bossLost(){
+  stinger(0);
   G.state='over'; G.drag=false; G.showRake=false; G.grab=null; G.active={}; $('chips').innerHTML=''; G.chipKey=''; leaveTrap();
   G.store.bank+=G.bagged; G.store.total+=G.bagged; save();
   $('verdict').textContent='The Nor’easter wins this time';
